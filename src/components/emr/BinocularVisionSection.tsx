@@ -5,7 +5,6 @@ import { DropdownButton, DropdownOption } from './DropdownButton';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
 import { SectionHeader } from './SectionHeader';
-import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
 interface BinocularVisionSectionProps {
@@ -36,7 +35,7 @@ interface DeviationState {
   eye: Eye | null;
   frequency: Frequency | null;
   compensation: Compensation | null;
-  quantity: number | null;
+  quantity: string | null;
 }
 
 type MaddoxDirection = 'eso' | 'exo' | 'hyper' | 'hypo';
@@ -44,7 +43,7 @@ type MaddoxDirection = 'eso' | 'exo' | 'hyper' | 'hypo';
 interface MaddoxState {
   direction: MaddoxDirection | null;
   eye: Eye | null;
-  quantity: number | null;
+  quantity: string | null;
 }
 
 // Parse notation string back to state
@@ -58,7 +57,7 @@ function parseNotation(notation: string): DeviationState {
   // Extract quantity (leading number)
   const quantityMatch = notation.match(/^(\d+)/);
   if (quantityMatch) {
-    state.quantity = parseInt(quantityMatch[1], 10);
+    state.quantity = quantityMatch[1];
   }
   
   // Check for direction - h = hypo (lowercase), H = hyper (uppercase)
@@ -116,7 +115,7 @@ function buildNotation(state: DeviationState): string {
   const isVertical = state.direction === 'hyper' || state.direction === 'hypo';
   
   // Start with quantity if present
-  let notation = state.quantity !== null ? String(state.quantity) : '';
+  let notation = state.quantity !== null ? state.quantity : '';
   
   // Direction prefix: H = hyper (uppercase), h = hypo (lowercase)
   const dirPrefix: Record<Direction, string> = {
@@ -172,7 +171,7 @@ function parseMaddoxNotation(notation: string): MaddoxState {
   // Extract quantity (leading number)
   const quantityMatch = notation.match(/^(\d+)/);
   if (quantityMatch) {
-    state.quantity = parseInt(quantityMatch[1], 10);
+    state.quantity = quantityMatch[1];
   }
 
   // Direction: E/X/H/h + dev
@@ -210,7 +209,7 @@ function buildMaddoxNotation(state: MaddoxState): string {
     hypo: 'h',
   };
 
-  let notation = state.quantity !== null ? String(state.quantity) : '';
+  let notation = state.quantity !== null ? state.quantity : '';
   notation += `${dirPrefix[state.direction]}dev`;
 
   if (isVertical && state.eye) {
@@ -249,7 +248,18 @@ function MaddoxBuilder({
   };
 
   const toggleQuantity = (num: number) => {
-    updateState({ quantity: state.quantity === num ? null : num });
+    const digit = String(num);
+    const current = state.quantity ?? '';
+    if (current.length >= 2) return;
+    if (!current || current === '0') {
+      updateState({ quantity: digit });
+      return;
+    }
+    updateState({ quantity: `${current}${digit}` });
+  };
+
+  const clearQuantity = () => {
+    updateState({ quantity: null });
   };
 
   const isVertical = state.direction === 'hyper' || state.direction === 'hypo';
@@ -269,24 +279,38 @@ function MaddoxBuilder({
       </div>
 
       {state.direction && (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground">Δ:</span>
-          <div className="flex gap-px">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
+          <div className="grid grid-cols-3 gap-px">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
               <button
                 key={num}
                 type="button"
                 onClick={() => toggleQuantity(num)}
-                className={cn(
-                  'w-5 h-5 text-[10px] font-medium rounded border transition-colors',
-                  state.quantity === num
-                    ? 'bg-zinc-800 text-white border-zinc-800'
-                    : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
-                )}
+                className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
               >
                 {num}
               </button>
             ))}
+          </div>
+          <div className="flex flex-col gap-px">
+            <button
+              type="button"
+              onClick={() => toggleQuantity(0)}
+              className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+            >
+              0
+            </button>
+            <button
+              type="button"
+              onClick={clearQuantity}
+              className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+            >
+              C
+            </button>
+          </div>
+          <div className="text-[10px] font-mono text-zinc-600 min-w-[16px]">
+            {state.quantity ?? ''}
           </div>
         </div>
       )}
@@ -386,7 +410,18 @@ function CoverTestBuilder({
   };
   
   const toggleQuantity = (num: number) => {
-    updateState({ quantity: state.quantity === num ? null : num });
+    const digit = String(num);
+    const current = state.quantity ?? '';
+    if (current.length >= 2) return;
+    if (!current || current === '0') {
+      updateState({ quantity: digit });
+      return;
+    }
+    updateState({ quantity: `${current}${digit}` });
+  };
+
+  const clearQuantity = () => {
+    updateState({ quantity: null });
   };
   
   const isVertical = state.direction === 'hyper' || state.direction === 'hypo';
@@ -414,24 +449,38 @@ function CoverTestBuilder({
       
       {/* Quantity Numpad */}
       {showQuantity && (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground">Δ:</span>
-          <div className="flex gap-px">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
+          <div className="grid grid-cols-3 gap-px">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
               <button
                 key={num}
                 type="button"
                 onClick={() => toggleQuantity(num)}
-                className={cn(
-                  'w-5 h-5 text-[10px] font-medium rounded border transition-colors',
-                  state.quantity === num
-                    ? 'bg-zinc-800 text-white border-zinc-800'
-                    : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
-                )}
+                className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
               >
                 {num}
               </button>
             ))}
+          </div>
+          <div className="flex flex-col gap-px">
+            <button
+              type="button"
+              onClick={() => toggleQuantity(0)}
+              className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+            >
+              0
+            </button>
+            <button
+              type="button"
+              onClick={clearQuantity}
+              className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+            >
+              C
+            </button>
+          </div>
+          <div className="text-[10px] font-mono text-zinc-600 min-w-[16px]">
+            {state.quantity ?? ''}
           </div>
         </div>
       )}
