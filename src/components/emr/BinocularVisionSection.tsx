@@ -55,32 +55,41 @@ function parseNotation(notation: string): DeviationState {
   
   const state: DeviationState = { direction: null, type: null, eye: null, frequency: null, compensation: null };
   
-  // Check for direction
-  if (notation.includes('E') && !notation.includes('Exo')) state.direction = 'eso';
-  else if (notation.includes('X') || notation.toLowerCase().includes('exo')) state.direction = 'exo';
-  else if (notation.includes('H') && notation.includes('OD')) { state.direction = 'hyper'; state.eye = 'OD'; }
-  else if (notation.includes('H') && notation.includes('OS')) { state.direction = 'hyper'; state.eye = 'OS'; }
-  else if (notation.toLowerCase().includes('hypo')) state.direction = 'hypo';
-  else if (notation.toLowerCase().includes('hyper')) state.direction = 'hyper';
-  else if (notation.toLowerCase().includes('eso') || notation.toLowerCase().includes('éso')) state.direction = 'eso';
+  // Check for direction - order matters! Check Ho (hypo) before H (hyper)
+  if (notation.startsWith('Ho') || notation.toLowerCase().includes('hypo')) {
+    state.direction = 'hypo';
+  } else if (notation.startsWith('H') || notation.toLowerCase().includes('hyper')) {
+    state.direction = 'hyper';
+  } else if (notation.startsWith('E') || notation.toLowerCase().includes('eso') || notation.toLowerCase().includes('éso')) {
+    state.direction = 'eso';
+  } else if (notation.startsWith('X') || notation.toLowerCase().includes('exo')) {
+    state.direction = 'exo';
+  }
+  
+  // Check for eye
+  if (notation.includes('alt')) {
+    state.eye = 'alt';
+  } else if (notation.includes('OD')) {
+    state.eye = 'OD';
+  } else if (notation.includes('OS')) {
+    state.eye = 'OS';
+  }
   
   // Check for type
-  if (notation.includes('(T)') || notation.includes('T') || notation.toLowerCase().includes('tropie')) {
+  if (notation.includes('(T)')) {
     state.type = 'tropie';
-    state.frequency = notation.includes('(T)') ? 'intermittent' : 'constant';
-  } else if (notation.toLowerCase().includes('phorie') || notation.includes('P')) {
+    state.frequency = 'intermittent';
+  } else if (notation.includes('T') || notation.toLowerCase().includes('tropie')) {
+    state.type = 'tropie';
+    state.frequency = 'constant';
+  } else if (notation.includes('P') || notation.toLowerCase().includes('phorie')) {
     state.type = 'phorie';
   }
   
-  // Check for eye (for tropies)
-  if (notation.includes('alt')) state.eye = 'alt';
-  else if (notation.includes('OD') && !state.eye) state.eye = 'OD';
-  else if (notation.includes('OS') && !state.eye) state.eye = 'OS';
-  
   // Check for compensation
   if (notation.includes('bc') || notation.toLowerCase().includes('bien')) state.compensation = 'bc';
+  else if (notation.includes('malc') || notation.includes('mal c') || notation.toLowerCase().includes('mal')) state.compensation = 'malc';
   else if (notation.includes('mc') || notation.toLowerCase().includes('moyen')) state.compensation = 'mc';
-  else if (notation.includes('malc') || notation.toLowerCase().includes('mal')) state.compensation = 'malc';
   
   return state;
 }
@@ -89,7 +98,7 @@ function parseNotation(notation: string): DeviationState {
 function buildNotation(state: DeviationState): string {
   if (state.direction === 'ortho' || !state.direction) return state.direction === 'ortho' ? 'Ortho' : '';
   
-  let notation = '';
+  const isVertical = state.direction === 'hyper' || state.direction === 'hypo';
   
   // Direction prefix
   const dirPrefix: Record<Direction, string> = {
@@ -99,11 +108,11 @@ function buildNotation(state: DeviationState): string {
     hyper: 'H',
     hypo: 'Ho',
   };
-  notation = dirPrefix[state.direction];
+  let notation = dirPrefix[state.direction];
   
-  // For vertical deviations, add eye
-  if ((state.direction === 'hyper' || state.direction === 'hypo') && state.eye && state.eye !== 'alt') {
-    notation += state.eye;
+  // For vertical deviations with specific eye (not alt), add eye after direction
+  if (isVertical && state.eye && state.eye !== 'alt') {
+    notation += ' ' + state.eye;
   }
   
   // Type suffix
@@ -113,14 +122,12 @@ function buildNotation(state: DeviationState): string {
     } else {
       notation += 'T';
     }
-    // Add eye for tropies (if not vertical which already has it)
-    if (state.eye && state.direction !== 'hyper' && state.direction !== 'hypo') {
-      if (state.eye === 'alt') {
-        notation += ' alt';
-      } else {
-        notation += ' ' + state.eye;
-      }
-    } else if (state.eye === 'alt' && (state.direction === 'hyper' || state.direction === 'hypo')) {
+    // Add eye for tropies (horizontal only, vertical already has it)
+    if (state.eye && !isVertical) {
+      notation += ' ' + state.eye;
+    }
+    // For vertical tropies with alternating
+    if (state.eye === 'alt' && isVertical) {
       notation += ' alt';
     }
   } else if (state.type === 'phorie') {
@@ -165,19 +172,25 @@ function CoverTestBuilder({
         newState.frequency = null;
         newState.compensation = null;
       } else if (updates.direction !== state.direction) {
-        // Keep type but clear eye-specific stuff for horizontal
-        if (updates.direction === 'eso' || updates.direction === 'exo') {
-          if (state.direction === 'hyper' || state.direction === 'hypo') {
-            newState.eye = null;
-          }
+        // Switching direction: clear type-related stuff but keep eye for vertical
+        const wasVertical = state.direction === 'hyper' || state.direction === 'hypo';
+        const isVertical = updates.direction === 'hyper' || updates.direction === 'hypo';
+        
+        // If switching from vertical to horizontal, clear eye
+        if (wasVertical && !isVertical) {
+          newState.eye = null;
         }
+        // If switching from horizontal to vertical, eye will be set by user
+        // If switching between hyper/hypo, keep the eye (same context)
       }
     }
     
     // Clear irrelevant fields based on type
     if (updates.type === 'phorie') {
       newState.frequency = null;
-      if (state.direction !== 'hyper' && state.direction !== 'hypo') {
+      // For horizontal phorias, eye is not relevant
+      const dir = newState.direction;
+      if (dir !== 'hyper' && dir !== 'hypo') {
         newState.eye = null;
       }
     } else if (updates.type === 'tropie') {
@@ -242,7 +255,7 @@ function CoverTestBuilder({
       {showEye && (
         <div className="flex flex-wrap gap-1 items-center">
           <span className="text-[10px] text-muted-foreground">
-            {isVertical ? 'Œil haut:' : 'Œil:'}
+            {state.direction === 'hyper' ? 'Œil haut:' : state.direction === 'hypo' ? 'Œil bas:' : 'Œil:'}
           </span>
           <QuickSelectButton
             size="xs"
