@@ -55,18 +55,62 @@ function loadSessionsFromStorage(): PatientSession[] {
           mouvements: session.preliminaryTests?.mouvements ?? '',
           notes: session.preliminaryTests?.notes ?? '',
         },
-        binocularVision: {
-          vbAvecRx: false,
-          vbSansRx: false,
-          coverTestVL: '', coverTestVP: '',
-          maddoxVL: '', maddoxVP: '',
-          filtreRougeVL: '', filtreRougeVP: '',
-          reservesBIVL: '', reservesBOVL: '',
-          reservesBIVP: '', reservesBOVP: '',
-          ppc: '', ppcRecovery: '', ppcTarget: '',
-          notes: '',
-          ...(session.binocularVision ?? {}),
-        },
+        binocularVision: (() => {
+          const legacy = session.binocularVision as any;
+          const defaultTable = {
+            rxStatus: '',
+            coverTestVL: '',
+            coverTestVP: '',
+            maddoxVL: '',
+            maddoxVP: '',
+            filtreRougeVL: '',
+            filtreRougeVP: '',
+            reservesBIVL: '',
+            reservesBOVL: '',
+            reservesBIVP: '',
+            reservesBOVP: '',
+            ppc: '',
+            ppcRecovery: '',
+            ppcTarget: '',
+          };
+
+          if (legacy?.tables && Array.isArray(legacy.tables) && legacy.tables.length > 0) {
+            return {
+              tables: legacy.tables.map((table: any) => ({
+                ...defaultTable,
+                ...table,
+              })),
+              notes: legacy.notes ?? '',
+            };
+          }
+
+          // Migrate legacy single-table fields (and old vbAvecRx/vbSansRx)
+          const rxStatus =
+            legacy?.vbAvecRx ? 'avec' : legacy?.vbSansRx ? 'sans' : '';
+
+          return {
+            tables: [
+              {
+                ...defaultTable,
+                rxStatus,
+                coverTestVL: legacy?.coverTestVL ?? '',
+                coverTestVP: legacy?.coverTestVP ?? '',
+                maddoxVL: legacy?.maddoxVL ?? '',
+                maddoxVP: legacy?.maddoxVP ?? '',
+                filtreRougeVL: legacy?.filtreRougeVL ?? '',
+                filtreRougeVP: legacy?.filtreRougeVP ?? '',
+                reservesBIVL: legacy?.reservesBIVL ?? '',
+                reservesBOVL: legacy?.reservesBOVL ?? '',
+                reservesBIVP: legacy?.reservesBIVP ?? '',
+                reservesBOVP: legacy?.reservesBOVP ?? '',
+                ppc: legacy?.ppc ?? '',
+                ppcRecovery: legacy?.ppcRecovery ?? '',
+                ppcTarget: legacy?.ppcTarget ?? '',
+              },
+            ],
+            notes: legacy?.notes ?? '',
+          };
+        })(),
         visualAcuity: session.visualAcuity ?? {
           scOD: '', scOS: '', scOU: '',
           avecOD: '', avecOS: '', avecOU: '',

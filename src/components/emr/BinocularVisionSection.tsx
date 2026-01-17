@@ -539,45 +539,83 @@ function CoverTestBuilder({
 }
 
 export function BinocularVisionSection({ binocularVision, onChange }: BinocularVisionSectionProps) {
-  const handleSelect = (field: keyof BinocularVision, value: string) => {
-    const current = binocularVision[field];
-    onChange({ [field]: current === value ? '' : value });
+  const tables = binocularVision.tables?.length
+    ? binocularVision.tables
+    : [
+        {
+          rxStatus: '',
+          coverTestVL: '',
+          coverTestVP: '',
+          maddoxVL: '',
+          maddoxVP: '',
+          filtreRougeVL: '',
+          filtreRougeVP: '',
+          reservesBIVL: '',
+          reservesBOVL: '',
+          reservesBIVP: '',
+          reservesBOVP: '',
+          ppc: '',
+          ppcRecovery: '',
+          ppcTarget: '',
+        },
+      ];
+
+  const updateTable = (index: number, updates: Partial<typeof tables[number]>) => {
+    const nextTables = tables.map((table, idx) =>
+      idx === index ? { ...table, ...updates } : table
+    );
+    onChange({ tables: nextTables });
   };
 
-  const toggleRxStatus = (field: 'vbAvecRx' | 'vbSansRx') => {
-    if (field === 'vbAvecRx') {
-      onChange({
-        vbAvecRx: !binocularVision.vbAvecRx,
-        vbSansRx: binocularVision.vbAvecRx ? binocularVision.vbSansRx : false,
-      });
-    } else {
-      onChange({
-        vbSansRx: !binocularVision.vbSansRx,
-        vbAvecRx: binocularVision.vbSansRx ? binocularVision.vbAvecRx : false,
-      });
-    }
+  const addTable = () => {
+    const nextTables = [
+      ...tables,
+      {
+        rxStatus: '',
+        coverTestVL: '',
+        coverTestVP: '',
+        maddoxVL: '',
+        maddoxVP: '',
+        filtreRougeVL: '',
+        filtreRougeVP: '',
+        reservesBIVL: '',
+        reservesBOVL: '',
+        reservesBIVP: '',
+        reservesBOVP: '',
+        ppc: '',
+        ppcRecovery: '',
+        ppcTarget: '',
+      },
+    ];
+    onChange({ tables: nextTables });
   };
 
-  const renderCoverTestCell = (field: 'coverTestVL' | 'coverTestVP') => {
+  const renderCoverTestCell = (
+    tableIndex: number,
+    field: 'coverTestVL' | 'coverTestVP'
+  ) => {
     return (
       <CoverTestBuilder
-        value={binocularVision[field]}
-        onChange={(v) => onChange({ [field]: v })}
+        value={tables[tableIndex][field]}
+        onChange={(v) => updateTable(tableIndex, { [field]: v })}
       />
     );
   };
 
-  const renderMaddoxCell = (field: 'maddoxVL' | 'maddoxVP') => {
+  const renderMaddoxCell = (tableIndex: number, field: 'maddoxVL' | 'maddoxVP') => {
     return (
       <MaddoxBuilder
-        value={binocularVision[field]}
-        onChange={(v) => onChange({ [field]: v })}
+        value={tables[tableIndex][field]}
+        onChange={(v) => updateTable(tableIndex, { [field]: v })}
       />
     );
   };
 
-  const renderFiltreRougeCell = (field: 'filtreRougeVL' | 'filtreRougeVP') => {
-    const value = binocularVision[field];
+  const renderFiltreRougeCell = (
+    tableIndex: number,
+    field: 'filtreRougeVL' | 'filtreRougeVP'
+  ) => {
+    const value = tables[tableIndex][field];
     
     return (
       <div className="flex flex-wrap gap-1">
@@ -585,12 +623,18 @@ export function BinocularVisionSection({ binocularVision, onChange }: BinocularV
           size="xs"
           label="Fusion"
           selected={value === 'Fusion'}
-          onClick={() => handleSelect(field, 'Fusion')}
+          onClick={() => updateTable(tableIndex, { [field]: value === 'Fusion' ? '' : 'Fusion' })}
           selectedClassName="bg-zinc-900 text-white border-zinc-900"
         />
         <DropdownButton label="+" selectedLabel={FILTRE_ROUGE_OPTIONS.filter(o => o.id !== 'Fusion').find(o => o.id === value)?.label}>
           {FILTRE_ROUGE_OPTIONS.filter(o => o.id !== 'Fusion').map((opt) => (
-            <DropdownOption key={opt.id} label={opt.label} selected={value === opt.id} onSelect={() => onChange({ [field]: opt.id })} onDeselect={() => onChange({ [field]: '' })} />
+            <DropdownOption
+              key={opt.id}
+              label={opt.label}
+              selected={value === opt.id}
+              onSelect={() => updateTable(tableIndex, { [field]: opt.id })}
+              onDeselect={() => updateTable(tableIndex, { [field]: '' })}
+            />
           ))}
         </DropdownButton>
       </div>
@@ -601,117 +645,152 @@ export function BinocularVisionSection({ binocularVision, onChange }: BinocularV
     <div className="space-y-6">
       <SectionHeader title="Vision Binoculaire" />
 
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-muted-foreground">VB:</span>
-        <QuickSelectButton
-          size="xs"
-          label="Avec Rx"
-          selected={binocularVision.vbAvecRx}
-          onClick={() => toggleRxStatus('vbAvecRx')}
-        />
-        <QuickSelectButton
-          size="xs"
-          label="Sans Rx"
-          selected={binocularVision.vbSansRx}
-          onClick={() => toggleRxStatus('vbSansRx')}
-        />
-      </div>
+      {tables.map((table, index) => {
+        const rxLabel =
+          table.rxStatus === 'avec'
+            ? ' (avec Rx)'
+            : table.rxStatus === 'sans'
+            ? ' (sans Rx)'
+            : '';
 
-      {/* Main Tests Table */}
-      <div className="border border-border rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-muted/50">
-              <th className="text-left px-3 py-2 font-medium w-24">Test</th>
-              <th className="text-left px-3 py-2 font-medium">VL</th>
-              <th className="text-left px-3 py-2 font-medium">VP</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-t border-border">
-              <td className="px-3 py-2 font-medium text-xs align-top">Test Écran</td>
-              <td className="px-3 py-2">{renderCoverTestCell('coverTestVL')}</td>
-              <td className="px-3 py-2">{renderCoverTestCell('coverTestVP')}</td>
-            </tr>
-            <tr className="border-t border-border">
-              <td className="px-3 py-2 font-medium text-xs align-top">TM</td>
-              <td className="px-3 py-2">{renderMaddoxCell('maddoxVL')}</td>
-              <td className="px-3 py-2">{renderMaddoxCell('maddoxVP')}</td>
-            </tr>
-            <tr className="border-t border-border">
-              <td className="px-3 py-2 font-medium text-xs align-top">FR</td>
-              <td className="px-3 py-2">{renderFiltreRougeCell('filtreRougeVL')}</td>
-              <td className="px-3 py-2">{renderFiltreRougeCell('filtreRougeVP')}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* PPC */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">PPC (Bris / Recouvrement)</Label>
-        <div className="grid grid-cols-3 gap-2">
-          <Input
-            value={binocularVision.ppc}
-            onChange={(e) => onChange({ ppc: e.target.value })}
-            placeholder="Bris: ex. 8cm"
-            className="text-xs"
-          />
-          <Input
-            value={binocularVision.ppcRecovery || ''}
-            onChange={(e) => onChange({ ppcRecovery: e.target.value })}
-            placeholder="Recouv: ex. 12cm"
-            className="text-xs"
-          />
-          <Input
-            value={binocularVision.ppcTarget || ''}
-            onChange={(e) => onChange({ ppcTarget: e.target.value })}
-            placeholder="Cible: stylo, lumière"
-            className="text-xs"
-          />
-        </div>
-      </div>
-
-      {/* Réserves Fusionnelles */}
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">Réserves Fusionnelles</Label>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground font-medium">VL</Label>
-            <div className="flex gap-2">
-              <Input
-                value={binocularVision.reservesBIVL}
-                onChange={(e) => onChange({ reservesBIVL: e.target.value })}
-                placeholder="BI: x/x/x"
-                className="text-xs"
-              />
-              <Input
-                value={binocularVision.reservesBOVL}
-                onChange={(e) => onChange({ reservesBOVL: e.target.value })}
-                placeholder="BO: x/x/x"
-                className="text-xs"
-              />
+        return (
+          <div key={`bino-table-${index}`} className="space-y-4">
+            <div className="border border-border rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/50">
+                    <th className="text-left px-3 py-2 font-medium w-32">Test</th>
+                    <th className="text-left px-3 py-2 font-medium">VL</th>
+                    <th className="text-left px-3 py-2 font-medium">VP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-t border-border">
+                    <td className="px-3 py-2 font-medium text-xs align-top">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span>Test Écran{rxLabel}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          <QuickSelectButton
+                            size="xs"
+                            label="Avec Rx"
+                            selected={table.rxStatus === 'avec'}
+                            onClick={() =>
+                              updateTable(index, {
+                                rxStatus: table.rxStatus === 'avec' ? '' : 'avec',
+                              })
+                            }
+                          />
+                          <QuickSelectButton
+                            size="xs"
+                            label="Sans Rx"
+                            selected={table.rxStatus === 'sans'}
+                            onClick={() =>
+                              updateTable(index, {
+                                rxStatus: table.rxStatus === 'sans' ? '' : 'sans',
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2">{renderCoverTestCell(index, 'coverTestVL')}</td>
+                    <td className="px-3 py-2">{renderCoverTestCell(index, 'coverTestVP')}</td>
+                  </tr>
+                  <tr className="border-t border-border">
+                    <td className="px-3 py-2 font-medium text-xs align-top">TM</td>
+                    <td className="px-3 py-2">{renderMaddoxCell(index, 'maddoxVL')}</td>
+                    <td className="px-3 py-2">{renderMaddoxCell(index, 'maddoxVP')}</td>
+                  </tr>
+                  <tr className="border-t border-border">
+                    <td className="px-3 py-2 font-medium text-xs align-top">FR</td>
+                    <td className="px-3 py-2">{renderFiltreRougeCell(index, 'filtreRougeVL')}</td>
+                    <td className="px-3 py-2">{renderFiltreRougeCell(index, 'filtreRougeVP')}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground font-medium">VP</Label>
-            <div className="flex gap-2">
-              <Input
-                value={binocularVision.reservesBIVP}
-                onChange={(e) => onChange({ reservesBIVP: e.target.value })}
-                placeholder="BI: x/x/x"
-                className="text-xs"
-              />
-              <Input
-                value={binocularVision.reservesBOVP}
-                onChange={(e) => onChange({ reservesBOVP: e.target.value })}
-                placeholder="BO: x/x/x"
-                className="text-xs"
-              />
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">PPC (Bris / Recouvrement)</Label>
+              <div className="grid grid-cols-3 gap-2">
+                <Input
+                  value={table.ppc}
+                  onChange={(e) => updateTable(index, { ppc: e.target.value })}
+                  placeholder="Bris: ex. 8cm"
+                  className="text-xs"
+                />
+                <Input
+                  value={table.ppcRecovery || ''}
+                  onChange={(e) => updateTable(index, { ppcRecovery: e.target.value })}
+                  placeholder="Recouv: ex. 12cm"
+                  className="text-xs"
+                />
+                <Input
+                  value={table.ppcTarget || ''}
+                  onChange={(e) => updateTable(index, { ppcTarget: e.target.value })}
+                  placeholder="Cible: stylo, lumière"
+                  className="text-xs"
+                />
+              </div>
             </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Réserves Fusionnelles</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground font-medium">VL</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={table.reservesBIVL}
+                      onChange={(e) => updateTable(index, { reservesBIVL: e.target.value })}
+                      placeholder="BI: x/x/x"
+                      className="text-xs"
+                    />
+                    <Input
+                      value={table.reservesBOVL}
+                      onChange={(e) => updateTable(index, { reservesBOVL: e.target.value })}
+                      placeholder="BO: x/x/x"
+                      className="text-xs"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground font-medium">VP</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={table.reservesBIVP}
+                      onChange={(e) => updateTable(index, { reservesBIVP: e.target.value })}
+                      placeholder="BI: x/x/x"
+                      className="text-xs"
+                    />
+                    <Input
+                      value={table.reservesBOVP}
+                      onChange={(e) => updateTable(index, { reservesBOVP: e.target.value })}
+                      placeholder="BO: x/x/x"
+                      className="text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {index === tables.length - 1 && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={addTable}
+                  className="h-7 w-7 rounded-md border border-border bg-white text-sm font-semibold text-muted-foreground hover:bg-muted"
+                  aria-label="Ajouter une table de tests"
+                >
+                  +
+                </button>
+              </div>
+            )}
           </div>
-        </div>
-      </div>
+        );
+      })}
 
       <CollapsibleNotes
         id="binocular-vision-notes"

@@ -352,34 +352,36 @@ export interface PreliminaryTests {
   notes: string;
 }
 
-export interface BinocularVision {
+export interface BinocularVisionTable {
   // Avec/Sans Rx
-  vbAvecRx: boolean;
-  vbSansRx: boolean;
+  rxStatus: 'avec' | 'sans' | '';
 
   // Test Écran (Cover Test)
-  coverTestVL: string; // ortho, eso, exo, hyper
+  coverTestVL: string;
   coverTestVP: string;
-  
+
   // Tige de Maddox
   maddoxVL: string;
   maddoxVP: string;
-  
+
   // Filtre Rouge
   filtreRougeVL: string;
   filtreRougeVP: string;
-  
+
   // Réserves fusionnelles
   reservesBIVL: string;
   reservesBOVL: string;
   reservesBIVP: string;
   reservesBOVP: string;
-  
+
   // PPC
-  ppc: string; // bris
-  ppcRecovery: string; // recouvrement
-  ppcTarget: string; // type de cible
-  
+  ppc: string;
+  ppcRecovery: string;
+  ppcTarget: string;
+}
+
+export interface BinocularVision {
+  tables: BinocularVisionTable[];
   notes: string;
 }
 
@@ -575,21 +577,24 @@ export function createEmptyPatientSession(): PatientSession {
       notes: '',
     },
     binocularVision: {
-      vbAvecRx: false,
-      vbSansRx: false,
-      coverTestVL: '',
-      coverTestVP: '',
-      maddoxVL: '',
-      maddoxVP: '',
-      filtreRougeVL: '',
-      filtreRougeVP: '',
-      reservesBIVL: '',
-      reservesBOVL: '',
-      reservesBIVP: '',
-      reservesBOVP: '',
-      ppc: '',
-      ppcRecovery: '',
-      ppcTarget: '',
+      tables: [
+        {
+          rxStatus: '',
+          coverTestVL: '',
+          coverTestVP: '',
+          maddoxVL: '',
+          maddoxVP: '',
+          filtreRougeVL: '',
+          filtreRougeVP: '',
+          reservesBIVL: '',
+          reservesBOVL: '',
+          reservesBIVP: '',
+          reservesBOVP: '',
+          ppc: '',
+          ppcRecovery: '',
+          ppcTarget: '',
+        },
+      ],
       notes: '',
     },
     visualAcuity: {

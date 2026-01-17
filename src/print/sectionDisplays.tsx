@@ -159,57 +159,81 @@ export function ObjectiveRefractionDisplay({ obj }: { obj: ObjectiveRefraction }
 }
 
 export function BinoDisplay({ bino }: { bino: BinocularVision }) {
-  const hasData = bino.vbAvecRx || bino.vbSansRx ||
-    bino.coverTestVL || bino.coverTestVP ||
-    bino.maddoxVL || bino.maddoxVP || bino.filtreRougeVL || bino.filtreRougeVP || bino.ppc ||
-    bino.reservesBIVL || bino.reservesBOVL ||
-    bino.reservesBIVP || bino.reservesBOVP;
+  const tables = bino.tables ?? [];
+  const hasTableData = tables.some((table) =>
+    table.rxStatus ||
+    table.coverTestVL || table.coverTestVP ||
+    table.maddoxVL || table.maddoxVP ||
+    table.filtreRougeVL || table.filtreRougeVP ||
+    table.ppc || table.ppcRecovery || table.ppcTarget ||
+    table.reservesBIVL || table.reservesBOVL ||
+    table.reservesBIVP || table.reservesBOVP
+  );
+  const hasData = hasTableData || bino.notes;
 
   if (!hasData) return <Empty />;
 
   return (
-    <div className="space-y-1 text-[10px]">
-      {(bino.vbAvecRx || bino.vbSansRx) && (
-        <DataRow label="Rx">
-          {bino.vbAvecRx && <span>Avec Rx</span>}
-          {bino.vbSansRx && <span>Sans Rx</span>}
-        </DataRow>
-      )}
-      {(bino.coverTestVL || bino.coverTestVP) && (
-        <DataRow label="Test Écran">
-          {bino.coverTestVL && <span>VL: {COVER_TEST_LABELS[bino.coverTestVL] || bino.coverTestVL}</span>}
-          {bino.coverTestVP && <span>VP: {COVER_TEST_LABELS[bino.coverTestVP] || bino.coverTestVP}</span>}
-        </DataRow>
-      )}
-      {(bino.maddoxVL || bino.maddoxVP) && (
-        <DataRow label="Maddox">
-          {bino.maddoxVL && <span>VL: {bino.maddoxVL}</span>}
-          {bino.maddoxVP && <span>VP: {bino.maddoxVP}</span>}
-        </DataRow>
-      )}
-      {(bino.filtreRougeVL || bino.filtreRougeVP) && (
-        <DataRow label="Filtre Rouge">
-          {bino.filtreRougeVL && <span>VL: {FILTRE_ROUGE_LABELS[bino.filtreRougeVL] || bino.filtreRougeVL}</span>}
-          {bino.filtreRougeVP && <span>VP: {FILTRE_ROUGE_LABELS[bino.filtreRougeVP] || bino.filtreRougeVP}</span>}
-        </DataRow>
-      )}
-      {(bino.ppc || bino.ppcRecovery) && (
-        <DataRow label="PPC">
-          {bino.ppc && <span>B: {bino.ppc}</span>}
-          {bino.ppcRecovery && <span>R: {bino.ppcRecovery}</span>}
-          {bino.ppcTarget && <span className="text-zinc-400">({bino.ppcTarget})</span>}
-        </DataRow>
-      )}
-      {(bino.reservesBIVL || bino.reservesBOVL || bino.reservesBIVP || bino.reservesBOVP) && (
-        <DataRow label="Réserves">
-          <div className="flex flex-col">
-            {bino.reservesBIVL && <span>BI VL: {bino.reservesBIVL}</span>}
-            {bino.reservesBOVL && <span>BO VL: {bino.reservesBOVL}</span>}
-            {bino.reservesBIVP && <span>BI VP: {bino.reservesBIVP}</span>}
-            {bino.reservesBOVP && <span>BO VP: {bino.reservesBOVP}</span>}
+    <div className="space-y-2 text-[10px]">
+      {tables.map((table, index) => {
+        const rxLabel =
+          table.rxStatus === 'avec'
+            ? 'avec Rx'
+            : table.rxStatus === 'sans'
+            ? 'sans Rx'
+            : '';
+
+        const tableHasData =
+          table.rxStatus ||
+          table.coverTestVL || table.coverTestVP ||
+          table.maddoxVL || table.maddoxVP ||
+          table.filtreRougeVL || table.filtreRougeVP ||
+          table.ppc || table.ppcRecovery || table.ppcTarget ||
+          table.reservesBIVL || table.reservesBOVL ||
+          table.reservesBIVP || table.reservesBOVP;
+
+        if (!tableHasData) return null;
+
+        return (
+          <div key={`bino-table-${index}`} className="space-y-1">
+            {(table.coverTestVL || table.coverTestVP) && (
+              <DataRow label={rxLabel ? `Test Écran (${rxLabel})` : 'Test Écran'}>
+                {table.coverTestVL && <span>VL: {COVER_TEST_LABELS[table.coverTestVL] || table.coverTestVL}</span>}
+                {table.coverTestVP && <span>VP: {COVER_TEST_LABELS[table.coverTestVP] || table.coverTestVP}</span>}
+              </DataRow>
+            )}
+            {(table.maddoxVL || table.maddoxVP) && (
+              <DataRow label="Maddox">
+                {table.maddoxVL && <span>VL: {table.maddoxVL}</span>}
+                {table.maddoxVP && <span>VP: {table.maddoxVP}</span>}
+              </DataRow>
+            )}
+            {(table.filtreRougeVL || table.filtreRougeVP) && (
+              <DataRow label="Filtre Rouge">
+                {table.filtreRougeVL && <span>VL: {FILTRE_ROUGE_LABELS[table.filtreRougeVL] || table.filtreRougeVL}</span>}
+                {table.filtreRougeVP && <span>VP: {FILTRE_ROUGE_LABELS[table.filtreRougeVP] || table.filtreRougeVP}</span>}
+              </DataRow>
+            )}
+            {(table.ppc || table.ppcRecovery) && (
+              <DataRow label="PPC">
+                {table.ppc && <span>B: {table.ppc}</span>}
+                {table.ppcRecovery && <span>R: {table.ppcRecovery}</span>}
+                {table.ppcTarget && <span className="text-zinc-400">({table.ppcTarget})</span>}
+              </DataRow>
+            )}
+            {(table.reservesBIVL || table.reservesBOVL || table.reservesBIVP || table.reservesBOVP) && (
+              <DataRow label="Réserves">
+                <div className="flex flex-col">
+                  {table.reservesBIVL && <span>BI VL: {table.reservesBIVL}</span>}
+                  {table.reservesBOVL && <span>BO VL: {table.reservesBOVL}</span>}
+                  {table.reservesBIVP && <span>BI VP: {table.reservesBIVP}</span>}
+                  {table.reservesBOVP && <span>BO VP: {table.reservesBOVP}</span>}
+                </div>
+              </DataRow>
+            )}
           </div>
-        </DataRow>
-      )}
+        );
+      })}
       {bino.notes && <Note text={bino.notes} />}
     </div>
   );
