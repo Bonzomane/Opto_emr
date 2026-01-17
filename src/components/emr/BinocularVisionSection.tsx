@@ -37,7 +37,7 @@ type Direction = 'ortho' | 'eso' | 'exo' | 'hyper' | 'hypo';
 type DeviationType = 'phorie' | 'tropie';
 type Eye = 'OD' | 'OS' | 'alt';
 type Frequency = 'constant' | 'intermittent';
-type Compensation = 'bc' | 'mc' | 'malc';
+type Compensation = 'bc' | 'mbc' | 'mlc';
 
 interface DeviationState {
   direction: Direction | null;
@@ -83,7 +83,7 @@ function parseNotation(notation: string): DeviationState {
   } else if (notation.includes('T') || notation.toLowerCase().includes('tropie')) {
     state.type = 'tropie';
     state.frequency = 'constant';
-  } else if (notation.includes('bc') || notation.includes('mc') || notation.includes('mal') || notation.toLowerCase().includes('phorie')) {
+  } else if (notation.includes('bc') || notation.includes('mbc') || notation.includes('mlc') || notation.toLowerCase().includes('phorie')) {
     // Has compensation or explicitly says phorie = phoria
     state.type = 'phorie';
   } else if (state.direction && notation.length <= 6) {
@@ -93,9 +93,10 @@ function parseNotation(notation: string): DeviationState {
   }
   
   // Check for compensation (only relevant for phorias)
-  if (notation.includes('bc') || notation.toLowerCase().includes('bien')) state.compensation = 'bc';
-  else if (notation.includes('malc') || notation.includes('mal c') || notation.toLowerCase().includes('mal')) state.compensation = 'malc';
-  else if (notation.includes('mc') || notation.toLowerCase().includes('moyen')) state.compensation = 'mc';
+  // Order matters: check mbc before bc (since bc is substring of mbc)
+  if (notation.includes('mbc') || notation.toLowerCase().includes('moyennement')) state.compensation = 'mbc';
+  else if (notation.includes('mlc') || notation.toLowerCase().includes('mal')) state.compensation = 'mlc';
+  else if (notation.includes('bc') || notation.toLowerCase().includes('bien')) state.compensation = 'bc';
   
   return state;
 }
@@ -140,8 +141,8 @@ function buildNotation(state: DeviationState): string {
   if (state.type === 'phorie' && state.compensation) {
     const compLabels: Record<Compensation, string> = {
       bc: ' bc',
-      mc: ' mc',
-      malc: ' mal c',
+      mbc: ' mbc',
+      mlc: ' mlc',
     };
     notation += compLabels[state.compensation];
   }
@@ -308,21 +309,21 @@ function CoverTestBuilder({
           <span className="text-[10px] text-muted-foreground">Compensation:</span>
           <QuickSelectButton
             size="xs"
-            label="Bonne"
+            label="Bien"
             selected={state.compensation === 'bc'}
             onClick={() => updateState({ compensation: state.compensation === 'bc' ? null : 'bc' })}
           />
           <QuickSelectButton
             size="xs"
-            label="Moyenne"
-            selected={state.compensation === 'mc'}
-            onClick={() => updateState({ compensation: state.compensation === 'mc' ? null : 'mc' })}
+            label="Moy. Bien"
+            selected={state.compensation === 'mbc'}
+            onClick={() => updateState({ compensation: state.compensation === 'mbc' ? null : 'mbc' })}
           />
           <QuickSelectButton
             size="xs"
-            label="Mauvaise"
-            selected={state.compensation === 'malc'}
-            onClick={() => updateState({ compensation: state.compensation === 'malc' ? null : 'malc' })}
+            label="Mal"
+            selected={state.compensation === 'mlc'}
+            onClick={() => updateState({ compensation: state.compensation === 'mlc' ? null : 'mlc' })}
           />
         </div>
       )}
