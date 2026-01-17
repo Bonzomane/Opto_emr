@@ -45,25 +45,34 @@ interface DeviationState {
   eye: Eye | null;
   frequency: Frequency | null;
   compensation: Compensation | null;
+  quantity: number | null;
 }
 
 // Parse notation string back to state
 function parseNotation(notation: string): DeviationState {
   if (!notation || notation === 'Ortho') {
-    return { direction: notation === 'Ortho' ? 'ortho' : null, type: null, eye: null, frequency: null, compensation: null };
+    return { direction: notation === 'Ortho' ? 'ortho' : null, type: null, eye: null, frequency: null, compensation: null, quantity: null };
   }
   
-  const state: DeviationState = { direction: null, type: null, eye: null, frequency: null, compensation: null };
+  const state: DeviationState = { direction: null, type: null, eye: null, frequency: null, compensation: null, quantity: null };
+  
+  // Extract quantity (leading number)
+  const quantityMatch = notation.match(/^(\d+)/);
+  if (quantityMatch) {
+    state.quantity = parseInt(quantityMatch[1], 10);
+  }
   
   // Check for direction - h = hypo (lowercase), H = hyper (uppercase)
-  const firstChar = notation.charAt(0);
-  if (firstChar === 'h' || notation.toLowerCase().includes('hypo')) {
+  // Skip leading digits to find direction letter
+  const dirMatch = notation.match(/\d*([hHEX])/);
+  const dirChar = dirMatch ? dirMatch[1] : '';
+  if (dirChar === 'h' || notation.toLowerCase().includes('hypo')) {
     state.direction = 'hypo';
-  } else if (firstChar === 'H' || notation.toLowerCase().includes('hyper')) {
+  } else if (dirChar === 'H' || notation.toLowerCase().includes('hyper')) {
     state.direction = 'hyper';
-  } else if (firstChar === 'E' || notation.toLowerCase().includes('eso') || notation.toLowerCase().includes('éso')) {
+  } else if (dirChar === 'E' || notation.toLowerCase().includes('eso') || notation.toLowerCase().includes('éso')) {
     state.direction = 'eso';
-  } else if (firstChar === 'X' || notation.toLowerCase().includes('exo')) {
+  } else if (dirChar === 'X' || notation.toLowerCase().includes('exo')) {
     state.direction = 'exo';
   }
   
@@ -107,6 +116,9 @@ function buildNotation(state: DeviationState): string {
   
   const isVertical = state.direction === 'hyper' || state.direction === 'hypo';
   
+  // Start with quantity if present
+  let notation = state.quantity !== null ? String(state.quantity) : '';
+  
   // Direction prefix: H = hyper (uppercase), h = hypo (lowercase)
   const dirPrefix: Record<Direction, string> = {
     ortho: 'Ortho',
@@ -115,7 +127,7 @@ function buildNotation(state: DeviationState): string {
     hyper: 'H',
     hypo: 'h',
   };
-  let notation = dirPrefix[state.direction];
+  notation += dirPrefix[state.direction];
   
   // Type suffix - Phoria = just letter, Tropia = letter + T
   if (state.type === 'tropie') {
@@ -175,6 +187,7 @@ function CoverTestBuilder({
         newState.eye = null;
         newState.frequency = null;
         newState.compensation = null;
+        newState.quantity = null;
       } else if (updates.direction !== state.direction) {
         // Switching direction: clear type-related stuff but keep eye for vertical
         const wasVertical = state.direction === 'hyper' || state.direction === 'hypo';
@@ -208,13 +221,18 @@ function CoverTestBuilder({
   
   const toggleDirection = (dir: Direction) => {
     if (state.direction === dir) {
-      updateState({ direction: null, type: null, eye: null, frequency: null, compensation: null });
+      updateState({ direction: null, type: null, eye: null, frequency: null, compensation: null, quantity: null });
     } else {
       updateState({ direction: dir });
     }
   };
   
+  const toggleQuantity = (num: number) => {
+    updateState({ quantity: state.quantity === num ? null : num });
+  };
+  
   const isVertical = state.direction === 'hyper' || state.direction === 'hypo';
+  const showQuantity = state.direction && state.direction !== 'ortho';
   const showType = state.direction && state.direction !== 'ortho';
   const showEye = showType && (isVertical || state.type === 'tropie');
   const showFrequency = state.type === 'tropie';
@@ -235,6 +253,30 @@ function CoverTestBuilder({
           />
         ))}
       </div>
+      
+      {/* Quantity Numpad */}
+      {showQuantity && (
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] text-muted-foreground">Δ:</span>
+          <div className="flex gap-px">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
+              <button
+                key={num}
+                type="button"
+                onClick={() => toggleQuantity(num)}
+                className={cn(
+                  'w-5 h-5 text-[10px] font-medium rounded border transition-colors',
+                  state.quantity === num
+                    ? 'bg-zinc-800 text-white border-zinc-800'
+                    : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
+                )}
+              >
+                {num}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       
       {/* Type Row (Phorie/Tropie) */}
       {showType && (
