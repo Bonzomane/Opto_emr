@@ -55,14 +55,15 @@ function parseNotation(notation: string): DeviationState {
   
   const state: DeviationState = { direction: null, type: null, eye: null, frequency: null, compensation: null };
   
-  // Check for direction - order matters! Check Ho (hypo) before H (hyper)
-  if (notation.startsWith('Ho') || notation.toLowerCase().includes('hypo')) {
+  // Check for direction - h = hypo (lowercase), H = hyper (uppercase)
+  const firstChar = notation.charAt(0);
+  if (firstChar === 'h' || notation.toLowerCase().includes('hypo')) {
     state.direction = 'hypo';
-  } else if (notation.startsWith('H') || notation.toLowerCase().includes('hyper')) {
+  } else if (firstChar === 'H' || notation.toLowerCase().includes('hyper')) {
     state.direction = 'hyper';
-  } else if (notation.startsWith('E') || notation.toLowerCase().includes('eso') || notation.toLowerCase().includes('éso')) {
+  } else if (firstChar === 'E' || notation.toLowerCase().includes('eso') || notation.toLowerCase().includes('éso')) {
     state.direction = 'eso';
-  } else if (notation.startsWith('X') || notation.toLowerCase().includes('exo')) {
+  } else if (firstChar === 'X' || notation.toLowerCase().includes('exo')) {
     state.direction = 'exo';
   }
   
@@ -75,18 +76,23 @@ function parseNotation(notation: string): DeviationState {
     state.eye = 'OS';
   }
   
-  // Check for type
+  // Check for type - T or (T) = tropia, otherwise check for phoria indicators
   if (notation.includes('(T)')) {
     state.type = 'tropie';
     state.frequency = 'intermittent';
   } else if (notation.includes('T') || notation.toLowerCase().includes('tropie')) {
     state.type = 'tropie';
     state.frequency = 'constant';
-  } else if (notation.includes('P') || notation.toLowerCase().includes('phorie')) {
+  } else if (notation.includes('bc') || notation.includes('mc') || notation.includes('mal') || notation.toLowerCase().includes('phorie')) {
+    // Has compensation or explicitly says phorie = phoria
+    state.type = 'phorie';
+  } else if (state.direction && notation.length <= 6) {
+    // Short notation with just direction (+ maybe eye) = phoria
+    // e.g., "E", "X", "H OD", "h OS"
     state.type = 'phorie';
   }
   
-  // Check for compensation
+  // Check for compensation (only relevant for phorias)
   if (notation.includes('bc') || notation.toLowerCase().includes('bien')) state.compensation = 'bc';
   else if (notation.includes('malc') || notation.includes('mal c') || notation.toLowerCase().includes('mal')) state.compensation = 'malc';
   else if (notation.includes('mc') || notation.toLowerCase().includes('moyen')) state.compensation = 'mc';
@@ -100,47 +106,44 @@ function buildNotation(state: DeviationState): string {
   
   const isVertical = state.direction === 'hyper' || state.direction === 'hypo';
   
-  // Direction prefix
+  // Direction prefix: H = hyper (uppercase), h = hypo (lowercase)
   const dirPrefix: Record<Direction, string> = {
     ortho: 'Ortho',
     eso: 'E',
     exo: 'X',
     hyper: 'H',
-    hypo: 'Ho',
+    hypo: 'h',
   };
   let notation = dirPrefix[state.direction];
   
-  // For vertical deviations with specific eye (not alt), add eye after direction
-  if (isVertical && state.eye && state.eye !== 'alt') {
-    notation += ' ' + state.eye;
-  }
-  
-  // Type suffix
+  // Type suffix - Phoria = just letter, Tropia = letter + T
   if (state.type === 'tropie') {
     if (state.frequency === 'intermittent') {
       notation += '(T)';
     } else {
       notation += 'T';
     }
-    // Add eye for tropies (horizontal only, vertical already has it)
-    if (state.eye && !isVertical) {
-      notation += ' ' + state.eye;
-    }
-    // For vertical tropies with alternating
-    if (state.eye === 'alt' && isVertical) {
-      notation += ' alt';
-    }
-  } else if (state.type === 'phorie') {
-    notation += 'P';
-    // Add compensation for phorias
-    if (state.compensation) {
-      const compLabels: Record<Compensation, string> = {
-        bc: ' bc',
-        mc: ' mc',
-        malc: ' mal c',
-      };
-      notation += compLabels[state.compensation];
-    }
+  }
+  // Phoria = no suffix, just the direction letter
+  
+  // Add eye for vertical deviations
+  if (isVertical && state.eye) {
+    notation += ' ' + state.eye;
+  }
+  
+  // Add eye for horizontal tropies
+  if (!isVertical && state.type === 'tropie' && state.eye) {
+    notation += ' ' + state.eye;
+  }
+  
+  // Add compensation for phorias
+  if (state.type === 'phorie' && state.compensation) {
+    const compLabels: Record<Compensation, string> = {
+      bc: ' bc',
+      mc: ' mc',
+      malc: ' mal c',
+    };
+    notation += compLabels[state.compensation];
   }
   
   return notation;
