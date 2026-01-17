@@ -258,6 +258,13 @@ function MaddoxBuilder({
     updateState({ quantity: `${current}${digit}` });
   };
 
+  const backspaceQuantity = () => {
+    const current = state.quantity ?? '';
+    if (!current) return;
+    const next = current.slice(0, -1);
+    updateState({ quantity: next ? next : null });
+  };
+
   const clearQuantity = () => {
     updateState({ quantity: null });
   };
@@ -281,7 +288,7 @@ function MaddoxBuilder({
       {state.direction && (
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground">Δ:</span>
-          <div className="grid grid-cols-3 gap-px">
+          <div className="grid grid-cols-[repeat(3,1.25rem)] gap-px">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
               <button
                 key={num}
@@ -293,7 +300,15 @@ function MaddoxBuilder({
               </button>
             ))}
           </div>
-          <div className="flex flex-col gap-px">
+          <div className="grid grid-rows-3 gap-px">
+            <button
+              type="button"
+              onClick={backspaceQuantity}
+              className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+              aria-label="Retour"
+            >
+              ⌫
+            </button>
             <button
               type="button"
               onClick={() => toggleQuantity(0)}
@@ -420,6 +435,13 @@ function CoverTestBuilder({
     updateState({ quantity: `${current}${digit}` });
   };
 
+  const backspaceQuantity = () => {
+    const current = state.quantity ?? '';
+    if (!current) return;
+    const next = current.slice(0, -1);
+    updateState({ quantity: next ? next : null });
+  };
+
   const clearQuantity = () => {
     updateState({ quantity: null });
   };
@@ -451,7 +473,7 @@ function CoverTestBuilder({
       {showQuantity && (
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground">Δ:</span>
-          <div className="grid grid-cols-3 gap-px">
+          <div className="grid grid-cols-[repeat(3,1.25rem)] gap-px">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
               <button
                 key={num}
@@ -463,7 +485,15 @@ function CoverTestBuilder({
               </button>
             ))}
           </div>
-          <div className="flex flex-col gap-px">
+          <div className="grid grid-rows-3 gap-px">
+            <button
+              type="button"
+              onClick={backspaceQuantity}
+              className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+              aria-label="Retour"
+            >
+              ⌫
+            </button>
             <button
               type="button"
               onClick={() => toggleQuantity(0)}
