@@ -353,6 +353,10 @@ export interface PreliminaryTests {
 }
 
 export interface BinocularVision {
+  // Avec/Sans Rx
+  vbAvecRx: boolean;
+  vbSansRx: boolean;
+
   // Test Écran (Cover Test)
   coverTestVL: string; // ortho, eso, exo, hyper
   coverTestVP: string;
@@ -571,6 +575,8 @@ export function createEmptyPatientSession(): PatientSession {
       notes: '',
     },
     binocularVision: {
+      vbAvecRx: false,
+      vbSansRx: false,
       coverTestVL: '',
       coverTestVP: '',
       maddoxVL: '',

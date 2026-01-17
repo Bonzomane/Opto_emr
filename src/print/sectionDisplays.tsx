@@ -159,7 +159,8 @@ export function ObjectiveRefractionDisplay({ obj }: { obj: ObjectiveRefraction }
 }
 
 export function BinoDisplay({ bino }: { bino: BinocularVision }) {
-  const hasData = bino.coverTestVL || bino.coverTestVP ||
+  const hasData = bino.vbAvecRx || bino.vbSansRx ||
+    bino.coverTestVL || bino.coverTestVP ||
     bino.maddoxVL || bino.maddoxVP || bino.filtreRougeVL || bino.filtreRougeVP || bino.ppc ||
     bino.reservesBIVL || bino.reservesBOVL ||
     bino.reservesBIVP || bino.reservesBOVP;
@@ -168,6 +169,12 @@ export function BinoDisplay({ bino }: { bino: BinocularVision }) {
 
   return (
     <div className="space-y-1 text-[10px]">
+      {(bino.vbAvecRx || bino.vbSansRx) && (
+        <DataRow label="Rx">
+          {bino.vbAvecRx && <span>Avec Rx</span>}
+          {bino.vbSansRx && <span>Sans Rx</span>}
+        </DataRow>
+      )}
       {(bino.coverTestVL || bino.coverTestVP) && (
         <DataRow label="Test Écran">
           {bino.coverTestVL && <span>VL: {COVER_TEST_LABELS[bino.coverTestVL] || bino.coverTestVL}</span>}

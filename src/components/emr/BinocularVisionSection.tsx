@@ -13,15 +13,6 @@ interface BinocularVisionSectionProps {
   onChange: (updates: Partial<BinocularVision>) => void;
 }
 
-// Maddox options
-const MADDOX_OPTIONS = [
-  { id: 'Ortho', label: 'Ortho' },
-  { id: 'eso', label: 'Éso' },
-  { id: 'exo', label: 'Exo' },
-  { id: 'hyper', label: 'Hyper' },
-  { id: 'hypo', label: 'Hypo' },
-];
-
 // Filtre Rouge options
 const FILTRE_ROUGE_OPTIONS = [
   { id: 'Fusion', label: 'Fusion' },
@@ -45,6 +36,14 @@ interface DeviationState {
   eye: Eye | null;
   frequency: Frequency | null;
   compensation: Compensation | null;
+  quantity: number | null;
+}
+
+type MaddoxDirection = 'eso' | 'exo' | 'hyper' | 'hypo';
+
+interface MaddoxState {
+  direction: MaddoxDirection | null;
+  eye: Eye | null;
   quantity: number | null;
 }
 
@@ -160,6 +159,165 @@ function buildNotation(state: DeviationState): string {
   }
   
   return notation;
+}
+
+// Parse Maddox notation string back to state
+function parseMaddoxNotation(notation: string): MaddoxState {
+  if (!notation) {
+    return { direction: null, eye: null, quantity: null };
+  }
+
+  const state: MaddoxState = { direction: null, eye: null, quantity: null };
+
+  // Extract quantity (leading number)
+  const quantityMatch = notation.match(/^(\d+)/);
+  if (quantityMatch) {
+    state.quantity = parseInt(quantityMatch[1], 10);
+  }
+
+  // Direction: E/X/H/h + dev
+  const dirMatch = notation.match(/\d*([hHEX])dev/i);
+  const dirChar = dirMatch ? dirMatch[1] : '';
+  if (dirChar === 'h') {
+    state.direction = 'hypo';
+  } else if (dirChar === 'H') {
+    state.direction = 'hyper';
+  } else if (dirChar === 'E') {
+    state.direction = 'eso';
+  } else if (dirChar === 'X') {
+    state.direction = 'exo';
+  }
+
+  // Eye for vertical deviations
+  if (notation.includes('OD')) {
+    state.eye = 'OD';
+  } else if (notation.includes('OS')) {
+    state.eye = 'OS';
+  }
+
+  return state;
+}
+
+// Build Maddox notation string from state
+function buildMaddoxNotation(state: MaddoxState): string {
+  if (!state.direction) return '';
+
+  const isVertical = state.direction === 'hyper' || state.direction === 'hypo';
+  const dirPrefix: Record<MaddoxDirection, string> = {
+    eso: 'E',
+    exo: 'X',
+    hyper: 'H',
+    hypo: 'h',
+  };
+
+  let notation = state.quantity !== null ? String(state.quantity) : '';
+  notation += `${dirPrefix[state.direction]}dev`;
+
+  if (isVertical && state.eye) {
+    notation += ` ${state.eye}`;
+  }
+
+  return notation;
+}
+
+function MaddoxBuilder({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [state, setState] = useState<MaddoxState>(() => parseMaddoxNotation(value));
+
+  useEffect(() => {
+    const parsed = parseMaddoxNotation(value);
+    setState(parsed);
+  }, [value]);
+
+  const updateState = (updates: Partial<MaddoxState>) => {
+    const newState = { ...state, ...updates };
+    setState(newState);
+    onChange(buildMaddoxNotation(newState));
+  };
+
+  const toggleDirection = (dir: MaddoxDirection) => {
+    if (state.direction === dir) {
+      updateState({ direction: null, eye: null, quantity: null });
+    } else {
+      updateState({ direction: dir });
+    }
+  };
+
+  const toggleQuantity = (num: number) => {
+    updateState({ quantity: state.quantity === num ? null : num });
+  };
+
+  const isVertical = state.direction === 'hyper' || state.direction === 'hypo';
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-1">
+        {(['eso', 'exo', 'hyper', 'hypo'] as MaddoxDirection[]).map((dir) => (
+          <QuickSelectButton
+            key={dir}
+            size="xs"
+            label={{ eso: 'Éso', exo: 'Exo', hyper: 'Hyper', hypo: 'Hypo' }[dir]}
+            selected={state.direction === dir}
+            onClick={() => toggleDirection(dir)}
+          />
+        ))}
+      </div>
+
+      {state.direction && (
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] text-muted-foreground">Δ:</span>
+          <div className="flex gap-px">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
+              <button
+                key={num}
+                type="button"
+                onClick={() => toggleQuantity(num)}
+                className={cn(
+                  'w-5 h-5 text-[10px] font-medium rounded border transition-colors',
+                  state.quantity === num
+                    ? 'bg-zinc-800 text-white border-zinc-800'
+                    : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
+                )}
+              >
+                {num}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {isVertical && state.direction && (
+        <div className="flex flex-wrap gap-1 items-center">
+          <span className="text-[10px] text-muted-foreground">
+            {state.direction === 'hyper' ? 'Œil haut:' : 'Œil bas:'}
+          </span>
+          <QuickSelectButton
+            size="xs"
+            label="OD"
+            selected={state.eye === 'OD'}
+            onClick={() => updateState({ eye: state.eye === 'OD' ? null : 'OD' })}
+          />
+          <QuickSelectButton
+            size="xs"
+            label="OS"
+            selected={state.eye === 'OS'}
+            onClick={() => updateState({ eye: state.eye === 'OS' ? null : 'OS' })}
+          />
+        </div>
+      )}
+
+      {state.direction && (
+        <div className="text-xs font-mono bg-muted/50 px-2 py-1 rounded border border-border">
+          {buildMaddoxNotation(state) || '—'}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // Structured Cover Test Builder Component
@@ -386,9 +544,19 @@ export function BinocularVisionSection({ binocularVision, onChange }: BinocularV
     onChange({ [field]: current === value ? '' : value });
   };
 
-  // Check if value is one of the predefined options
-  const isOption = (value: string, options: { id: string }[]) => 
-    options.some(o => o.id === value);
+  const toggleRxStatus = (field: 'vbAvecRx' | 'vbSansRx') => {
+    if (field === 'vbAvecRx') {
+      onChange({
+        vbAvecRx: !binocularVision.vbAvecRx,
+        vbSansRx: binocularVision.vbAvecRx ? binocularVision.vbSansRx : false,
+      });
+    } else {
+      onChange({
+        vbSansRx: !binocularVision.vbSansRx,
+        vbAvecRx: binocularVision.vbSansRx ? binocularVision.vbAvecRx : false,
+      });
+    }
+  };
 
   const renderCoverTestCell = (field: 'coverTestVL' | 'coverTestVP') => {
     return (
@@ -400,30 +568,11 @@ export function BinocularVisionSection({ binocularVision, onChange }: BinocularV
   };
 
   const renderMaddoxCell = (field: 'maddoxVL' | 'maddoxVP') => {
-    const value = binocularVision[field];
-    const isCustom = value && !isOption(value, MADDOX_OPTIONS);
-    
     return (
-      <div className="space-y-1">
-        <div className="flex flex-wrap gap-1">
-          <QuickSelectButton
-            size="xs"
-            label="Ortho"
-            selected={value === 'Ortho'}
-            onClick={() => handleSelect(field, 'Ortho')}
-            selectedClassName="bg-zinc-900 text-white border-zinc-900"
-          />
-          {MADDOX_OPTIONS.filter(o => o.id !== 'Ortho').map((opt) => (
-            <QuickSelectButton size="xs" key={opt.id} label={opt.label} selected={value === opt.id} onClick={() => handleSelect(field, opt.id)} />
-          ))}
-        </div>
-        <Input
-          value={isCustom ? value : ''}
-          onChange={(e) => onChange({ [field]: e.target.value })}
-          placeholder="ex: 4Xdev, 2Hdev"
-          className="h-7 text-xs"
-        />
-      </div>
+      <MaddoxBuilder
+        value={binocularVision[field]}
+        onChange={(v) => onChange({ [field]: v })}
+      />
     );
   };
 
@@ -451,6 +600,22 @@ export function BinocularVisionSection({ binocularVision, onChange }: BinocularV
   return (
     <div className="space-y-6">
       <SectionHeader title="Vision Binoculaire" />
+
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground">VB:</span>
+        <QuickSelectButton
+          size="xs"
+          label="Avec Rx"
+          selected={binocularVision.vbAvecRx}
+          onClick={() => toggleRxStatus('vbAvecRx')}
+        />
+        <QuickSelectButton
+          size="xs"
+          label="Sans Rx"
+          selected={binocularVision.vbSansRx}
+          onClick={() => toggleRxStatus('vbSansRx')}
+        />
+      </div>
 
       {/* Main Tests Table */}
       <div className="border border-border rounded-lg overflow-hidden">

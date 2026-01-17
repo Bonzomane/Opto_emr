@@ -55,7 +55,9 @@ function loadSessionsFromStorage(): PatientSession[] {
           mouvements: session.preliminaryTests?.mouvements ?? '',
           notes: session.preliminaryTests?.notes ?? '',
         },
-        binocularVision: session.binocularVision ?? {
+        binocularVision: {
+          vbAvecRx: false,
+          vbSansRx: false,
           coverTestVL: '', coverTestVP: '',
           maddoxVL: '', maddoxVP: '',
           filtreRougeVL: '', filtreRougeVP: '',
@@ -63,6 +65,7 @@ function loadSessionsFromStorage(): PatientSession[] {
           reservesBIVP: '', reservesBOVP: '',
           ppc: '', ppcRecovery: '', ppcTarget: '',
           notes: '',
+          ...(session.binocularVision ?? {}),
         },
         visualAcuity: session.visualAcuity ?? {
           scOD: '', scOS: '', scOU: '',
