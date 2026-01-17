@@ -4,8 +4,7 @@ import { Label } from '@/components/ui/label';
 import { DropdownButton, DropdownOption } from './DropdownButton';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { RefractionDisplay } from '@/print/sectionDisplays';
+import { SectionHeader } from './SectionHeader';
 import { useEffect, useState } from 'react';
 
 interface RefractionSectionProps {
@@ -510,10 +509,7 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
 
   return (
     <div className="space-y-6">
-      <SectionHeaderWithPreview
-        title="Réfraction"
-        preview={<RefractionDisplay rx={refraction} />}
-      />
+      <SectionHeader title="Réfraction" />
 
       {/* Rx Finale */}
       <div className="space-y-3">

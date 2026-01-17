@@ -3,8 +3,7 @@ import { Label } from '@/components/ui/label';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { DropdownButton, DropdownOption } from './DropdownButton';
 import { QuickSelectButton } from './QuickSelectButton';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { OCTDisplay } from '@/print/sectionDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface OCTSectionProps {
   oct: OCT;
@@ -56,10 +55,7 @@ export function OCTSection({ oct, onChange }: OCTSectionProps) {
 
   return (
     <div className="space-y-6">
-      <SectionHeaderWithPreview
-        title="OCT"
-        preview={<OCTDisplay oct={oct} />}
-      />
+      <SectionHeader title="OCT" />
 
       {/* Type */}
       <div className="space-y-2">

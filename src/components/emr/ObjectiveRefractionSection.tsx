@@ -1,8 +1,7 @@
 import { ObjectiveRefraction } from '@/types/emr';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { ObjectiveRefractionDisplay } from '@/print/sectionDisplays';
+import { SectionHeader } from './SectionHeader';
 import { useState, useEffect } from 'react';
 
 interface ObjectiveRefractionSectionProps {
@@ -299,10 +298,7 @@ export function ObjectiveRefractionSection({ objectiveRefraction, onChange }: Ob
 
   return (
     <div className="space-y-4">
-      <SectionHeaderWithPreview
-        title="Réfraction Objective"
-        preview={<ObjectiveRefractionDisplay obj={objectiveRefraction} />}
-      />
+      <SectionHeader title="Réfraction Objective" />
       {/* Method Selection */}
       <div>
         <label className="block text-sm font-medium text-zinc-700 mb-2">Méthode</label>

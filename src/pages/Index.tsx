@@ -11,6 +11,7 @@ import { AnteriorSegmentSection } from '@/components/emr/AnteriorSegmentSection'
 import { PosteriorSegmentSection } from '@/components/emr/PosteriorSegmentSection';
 import { DiagnosticTestsSection } from '@/components/emr/DiagnosticTestsSection';
 import { AssessmentPlanSection } from '@/components/emr/AssessmentPlanSection';
+import { LivePreviewPanel } from '@/components/emr/LivePreviewPanel';
 import { usePatientSessions } from '@/hooks/usePatientSessions';
 
 // Normal exam results for routine examinations
@@ -119,7 +120,7 @@ const Index = () => {
           onSelectSection={setActiveSection}
         />
         <main className="flex-1 overflow-hidden p-4">
-          <div className="max-w-2xl h-full">
+          <div className="h-full">
             {activeSection === 'case-history' && (
               <CaseHistorySection
                 session={activeSession}
@@ -218,6 +219,13 @@ const Index = () => {
             )}
           </div>
         </main>
+        
+        {/* Live Preview Panel */}
+        <LivePreviewPanel
+          session={activeSession}
+          activeSection={activeSection}
+          className="w-72 shrink-0"
+        />
       </div>
     </div>
   );

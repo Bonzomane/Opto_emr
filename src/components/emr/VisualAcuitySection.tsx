@@ -3,8 +3,7 @@ import { Label } from '@/components/ui/label';
 import { DropdownButton, DropdownOption } from './DropdownButton';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { Empty } from '@/print/previewComponents';
+import { SectionHeader } from './SectionHeader';
 
 interface VisualAcuitySectionProps {
   visualAcuity: VisualAcuityData;
@@ -55,7 +54,7 @@ export function VisualAcuitySection({ visualAcuity, onChange }: VisualAcuitySect
 
   return (
     <div className="space-y-6">
-      <SectionHeaderWithPreview title="Acuité Visuelle" preview={<Empty />} />
+      <SectionHeader title="Acuité Visuelle" />
 
       {/* Sans Correction */}
       <div className="space-y-3">

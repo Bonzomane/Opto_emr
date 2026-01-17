@@ -100,7 +100,8 @@ export function CurrentRxDisplay({ currentRx }: { currentRx: CurrentRx }) {
 
   const fieldLabels: Record<string, string> = {
     type: 'Type',
-    vision: 'Vision',
+    visionVL: 'Vision VL',
+    visionVP: 'Vision VP',
     condition: 'État',
   };
 

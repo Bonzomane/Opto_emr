@@ -4,8 +4,7 @@ import { Label } from '@/components/ui/label';
 import { DropdownButton, DropdownOption } from './DropdownButton';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { IOPDisplay } from '@/print/sectionDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface IOPSectionProps {
   iop: IOP;
@@ -34,10 +33,7 @@ export function IOPSection({ iop, onChange }: IOPSectionProps) {
 
   return (
     <div className="space-y-6">
-      <SectionHeaderWithPreview
-        title="Pression Intraoculaire"
-        preview={<IOPDisplay iop={iop} />}
-      />
+      <SectionHeader title="Pression Intraoculaire" />
 
       {/* Method */}
       <div className="space-y-3">

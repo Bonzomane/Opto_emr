@@ -58,7 +58,12 @@ export const RX_FIELD_LABELS: Record<string, Record<string, string>> = {
     'ctrl-myopie': 'Ctrl. Myopie',
     'lc': 'LC',
   },
-  vision: {
+  visionVL: {
+    'bonne': 'Bonne',
+    'moyenne': 'Moyenne',
+    'mauvaise': 'Mauvaise',
+  },
+  visionVP: {
     'bonne': 'Bonne',
     'moyenne': 'Moyenne',
     'mauvaise': 'Mauvaise',

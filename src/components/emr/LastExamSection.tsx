@@ -3,8 +3,7 @@ import { Label } from '@/components/ui/label';
 import { LastExamInfo, LastExamPeriod, LAST_EXAM_LABELS, PatientSession } from '@/types/emr';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { cn } from '@/lib/utils';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { VisitDisplay } from '@/print/caseHistoryDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface LastExamSectionProps {
   lastExamInfo: LastExamInfo;
@@ -25,15 +24,7 @@ export function LastExamSection({ lastExamInfo, onChange, session }: LastExamSec
 
   return (
     <div className="space-y-4">
-      <SectionHeaderWithPreview
-        title="Dernier Examen de la Vue"
-        preview={
-          <VisitDisplay
-            reasonForVisit={session?.reasonForVisit ?? { visitType: null, notes: '' }}
-            lastExamInfo={lastExamInfo}
-          />
-        }
-      />
+      <SectionHeader title="Dernier Examen de la Vue" />
 
       <div className="space-y-3">
         <div className="flex flex-wrap gap-1.5">

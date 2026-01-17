@@ -5,8 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { cn } from '@/lib/utils';
 import { parseRxNumbers } from '@/lib/rxFormat';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { AssessmentPlanDisplay } from '@/print/sectionDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface AssessmentPlanSectionProps {
   assessmentPlan: AssessmentPlan;
@@ -134,17 +133,7 @@ export function AssessmentPlanSection({ assessmentPlan, onChange, refraction }: 
   };
   return (
     <div className="space-y-6">
-      <SectionHeaderWithPreview
-        title="Évaluation et Plan"
-        preview={
-          <AssessmentPlanDisplay
-            diagnosis={assessmentPlan.diagnosis}
-            plan={assessmentPlan.plan}
-            nextVisit={assessmentPlan.nextVisit}
-            notes={assessmentPlan.notes}
-          />
-        }
-      />
+      <SectionHeader title="Évaluation et Plan" />
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">

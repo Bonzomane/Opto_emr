@@ -3,8 +3,7 @@ import { PersonalOcularHealth, PatientSession } from '@/types/emr';
 import { ConditionGrid } from './ConditionGrid';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { OCULAR_CONDITIONS, OCULAR_SURGERIES } from '@/data/medicalDefinitions';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { PersonalOcularHealthDisplay } from '@/print/caseHistoryDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface PersonalOcularHealthSectionProps {
   personalOcularHealth: PersonalOcularHealth;
@@ -15,10 +14,7 @@ interface PersonalOcularHealthSectionProps {
 export function PersonalOcularHealthSection({ personalOcularHealth, onChange }: PersonalOcularHealthSectionProps) {
   return (
     <div className="space-y-4">
-      <SectionHeaderWithPreview
-        title="Santé Oculaire Personnelle"
-        preview={<PersonalOcularHealthDisplay personalOcularHealth={personalOcularHealth} />}
-      />
+      <SectionHeader title="Santé Oculaire Personnelle" />
 
       <div>
         <Label className="text-sm font-medium">Conditions Oculaires</Label>

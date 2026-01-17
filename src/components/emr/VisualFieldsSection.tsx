@@ -3,8 +3,7 @@ import { Label } from '@/components/ui/label';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { DropdownButton, DropdownOption } from './DropdownButton';
 import { QuickSelectButton } from './QuickSelectButton';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { VisualFieldsDisplay } from '@/print/sectionDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface VisualFieldsSectionProps {
   visualFields: VisualFields;
@@ -87,10 +86,7 @@ export function VisualFieldsSection({ visualFields, onChange }: VisualFieldsSect
 
   return (
     <div className="space-y-6">
-      <SectionHeaderWithPreview
-        title="Champs Visuels"
-        preview={<VisualFieldsDisplay vf={visualFields} />}
-      />
+      <SectionHeader title="Champs Visuels" />
 
       {/* Type */}
       <div className="space-y-2">

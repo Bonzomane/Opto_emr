@@ -4,8 +4,7 @@ import { Complaint, PatientSession } from '@/types/emr';
 import { ConditionGrid } from './ConditionGrid';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { SYMPTOMS } from '@/data/medicalDefinitions';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { ComplaintDisplay } from '@/print/caseHistoryDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface ComplaintSectionProps {
   complaint: Complaint;
@@ -16,7 +15,7 @@ interface ComplaintSectionProps {
 export function ComplaintSection({ complaint, onChange }: ComplaintSectionProps) {
   return (
     <div className="space-y-4">
-      <SectionHeaderWithPreview title="Plaintes" preview={<ComplaintDisplay complaint={complaint} />} />
+      <SectionHeader title="Plaintes" />
 
       <div className="space-y-1">
         <Label htmlFor="chief-complaint" className="text-xs text-muted-foreground">

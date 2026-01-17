@@ -2,8 +2,7 @@ import { VisualNeeds, PatientSession } from '@/types/emr';
 import { DropdownButton, DropdownOption } from './DropdownButton';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { VisualNeedsDisplay } from '@/print/caseHistoryDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface VisualNeedsSectionProps {
   visualNeeds: VisualNeeds;
@@ -107,10 +106,7 @@ export function VisualNeedsSection({ visualNeeds, onChange }: VisualNeedsSection
 
   return (
     <div className="space-y-4">
-      <SectionHeaderWithPreview
-        title="Besoin Visuel"
-        preview={<VisualNeedsDisplay visualNeeds={visualNeeds} />}
-      />
+      <SectionHeader title="Besoin Visuel" />
 
       <div className="space-y-3">
         {/* Travail row */}

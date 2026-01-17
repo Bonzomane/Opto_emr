@@ -4,8 +4,7 @@ import { DropdownButton, DropdownOption } from './DropdownButton';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { cn } from '@/lib/utils';
 import { QuickSelectButton } from './QuickSelectButton';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { PrelimTestsDisplay } from '@/print/sectionDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface PreliminaryTestsSectionProps {
   preliminaryTests: PreliminaryTests;
@@ -220,10 +219,7 @@ export function PreliminaryTestsSection({ preliminaryTests, onChange }: Prelimin
 
   return (
     <div className="space-y-6">
-      <SectionHeaderWithPreview
-        title="Tests Préliminaires"
-        preview={<PrelimTestsDisplay tests={preliminaryTests} />}
-      />
+      <SectionHeader title="Tests Préliminaires" />
 
       {/* ==================== AV VL SECTION ==================== */}
       <div className="border border-zinc-300 rounded-lg p-3 bg-zinc-50/50">

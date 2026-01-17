@@ -4,8 +4,7 @@ import { CollapsibleNotes } from './CollapsibleNotes';
 import { DropdownButton, DropdownOption } from './DropdownButton';
 import { QuickSelectButton } from './QuickSelectButton';
 import { hasCsvValue, toggleCsvValue } from '@/lib/selection';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { SegmentDisplay } from '@/print/sectionDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface PosteriorSegmentSectionProps {
   posteriorSegment: PosteriorSegment;
@@ -158,10 +157,7 @@ export function PosteriorSegmentSection({ posteriorSegment, onChange }: Posterio
 
   return (
     <div className="space-y-6">
-      <SectionHeaderWithPreview
-        title="Segment Postérieur"
-        preview={<SegmentDisplay data={posteriorSegment as Record<string, string>} />}
-      />
+      <SectionHeader title="Segment Postérieur" />
 
       <div className="space-y-4">
         {FIELDS.map(({ baseKey, label, common, options }) => (

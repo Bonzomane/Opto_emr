@@ -2,8 +2,7 @@ import { CurrentRx, PatientSession } from '@/types/emr';
 import { DropdownButton, DropdownOption } from './DropdownButton';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { CurrentRxDisplay } from '@/print/caseHistoryDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface CurrentRxSectionProps {
   currentRx: CurrentRx;
@@ -105,10 +104,7 @@ export function CurrentRxSection({ currentRx, onChange }: CurrentRxSectionProps)
 
   return (
     <div className="space-y-4">
-      <SectionHeaderWithPreview
-        title="RX Actuel"
-        preview={<CurrentRxDisplay currentRx={currentRx} />}
-      />
+      <SectionHeader title="RX Actuels" />
 
       <div className="space-y-3">
         {/* Aucune Rx / Pas d'Rx VL/VP + Type row */}
@@ -132,15 +128,28 @@ export function CurrentRxSection({ currentRx, onChange }: CurrentRxSectionProps)
           </DropdownButton>
         </div>
 
-        {/* Vision row */}
+        {/* Vision VL row */}
         <div className="flex flex-wrap items-center gap-1">
-          <span className="text-xs text-muted-foreground min-w-[40px]">Vision</span>
+          <span className="text-xs text-muted-foreground min-w-[60px]">Vision VL</span>
           {VISION_OPTIONS.map((opt) => (
             <QuickSelectButton 
               key={opt.id} 
               label={opt.label} 
-              selected={getFieldValue('vision') === opt.id} 
-              onClick={() => getFieldValue('vision') === opt.id ? clearFieldValue('vision') : setFieldValue('vision', opt.id)} 
+              selected={getFieldValue('visionVL') === opt.id} 
+              onClick={() => getFieldValue('visionVL') === opt.id ? clearFieldValue('visionVL') : setFieldValue('visionVL', opt.id)} 
+            />
+          ))}
+        </div>
+
+        {/* Vision VP row */}
+        <div className="flex flex-wrap items-center gap-1">
+          <span className="text-xs text-muted-foreground min-w-[60px]">Vision VP</span>
+          {VISION_OPTIONS.map((opt) => (
+            <QuickSelectButton 
+              key={opt.id} 
+              label={opt.label} 
+              selected={getFieldValue('visionVP') === opt.id} 
+              onClick={() => getFieldValue('visionVP') === opt.id ? clearFieldValue('visionVP') : setFieldValue('visionVP', opt.id)} 
             />
           ))}
         </div>

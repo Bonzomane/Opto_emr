@@ -6,8 +6,7 @@ import { CollapsibleNotes } from './CollapsibleNotes';
 import { MEDICAL_CONDITIONS, MEDICATIONS, ALLERGIES } from '@/data/medicalDefinitions';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { AllergiesDisplay, PersonalGeneralHealthDisplay } from '@/print/caseHistoryDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface PersonalGeneralHealthSectionProps {
   personalGeneralHealth: PersonalGeneralHealth;
@@ -21,21 +20,7 @@ export function PersonalGeneralHealthSection({ personalGeneralHealth, onChange }
 
   return (
     <div className="space-y-6">
-      <SectionHeaderWithPreview
-        title="Santé Générale Personnelle"
-        preview={
-          <div className="space-y-2">
-            <div>
-              <span className="text-[9px] text-zinc-400 uppercase block">Santé Générale</span>
-              <PersonalGeneralHealthDisplay personalGeneralHealth={personalGeneralHealth} />
-            </div>
-            <div>
-              <span className="text-[9px] text-zinc-400 uppercase block">Allergies</span>
-              <AllergiesDisplay personalGeneralHealth={personalGeneralHealth} />
-            </div>
-          </div>
-        }
-      />
+      <SectionHeader title="Santé Générale Personnelle" />
 
       {/* Medical Conditions */}
       <div>

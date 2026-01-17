@@ -6,8 +6,7 @@ import { DropdownButton, DropdownOption } from './DropdownButton';
 import { cn } from '@/lib/utils';
 import { QuickSelectButton } from './QuickSelectButton';
 import { hasCsvValue, parseCsv, toggleCsvValue } from '@/lib/selection';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { SegmentDisplay } from '@/print/sectionDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface AnteriorSegmentSectionProps {
   anteriorSegment: AnteriorSegment;
@@ -288,10 +287,7 @@ export function AnteriorSegmentSection({ anteriorSegment, onChange }: AnteriorSe
 
   return (
     <div className="space-y-6">
-      <SectionHeaderWithPreview
-        title="Segment Antérieur"
-        preview={<SegmentDisplay data={anteriorSegment as Record<string, string>} />}
-      />
+      <SectionHeader title="Segment Antérieur" />
 
       <div className="space-y-4">
         {/* Regular fields */}

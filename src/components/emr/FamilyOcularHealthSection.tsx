@@ -3,8 +3,7 @@ import { FamilyOcularHealth, PatientSession } from '@/types/emr';
 import { ConditionGrid } from './ConditionGrid';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { FAMILY_OCULAR_CONDITIONS } from '@/data/medicalDefinitions';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { FamilyHistoryDisplay } from '@/print/caseHistoryDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface FamilyOcularHealthSectionProps {
   familyOcularHealth: FamilyOcularHealth;
@@ -15,15 +14,7 @@ interface FamilyOcularHealthSectionProps {
 export function FamilyOcularHealthSection({ familyOcularHealth, onChange, session }: FamilyOcularHealthSectionProps) {
   return (
     <div className="space-y-4">
-      <SectionHeaderWithPreview
-        title="Santé Oculaire Familiale"
-        preview={
-          <FamilyHistoryDisplay
-            familyOcularHealth={familyOcularHealth}
-            familyGeneralHealth={session?.familyGeneralHealth ?? { conditions: [], notes: '' }}
-          />
-        }
-      />
+      <SectionHeader title="Santé Oculaire Familiale" />
 
       <div>
         <Label className="text-sm font-medium">Antécédents Oculaires Familiaux</Label>

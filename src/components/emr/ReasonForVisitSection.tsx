@@ -2,8 +2,7 @@ import { ReasonForVisit, VisitType, VISIT_TYPE_LABELS, PatientSession } from '@/
 import { DropdownButton, DropdownOption } from './DropdownButton';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { cn } from '@/lib/utils';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { VisitDisplay } from '@/print/caseHistoryDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface ReasonForVisitSectionProps {
   reasonForVisit: ReasonForVisit;
@@ -40,15 +39,7 @@ export function ReasonForVisitSection({ reasonForVisit, onChange, session }: Rea
 
   return (
     <div className="space-y-4">
-      <SectionHeaderWithPreview
-        title="Raison de la Visite"
-        preview={
-          <VisitDisplay
-            reasonForVisit={reasonForVisit}
-            lastExamInfo={session?.lastExamInfo ?? { lastExamPeriod: null, lastExamDate: null, previousExaminer: '', notes: '' }}
-          />
-        }
-      />
+      <SectionHeader title="Raison de la Visite" />
 
       <div className="flex flex-wrap gap-2">
         {/* Common types as simple buttons */}

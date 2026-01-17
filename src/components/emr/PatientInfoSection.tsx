@@ -2,8 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PatientInfo, PatientSession } from '@/types/emr';
 import { CollapsibleNotes } from './CollapsibleNotes';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { Empty } from '@/print/previewComponents';
+import { SectionHeader } from './SectionHeader';
 
 interface PatientInfoSectionProps {
   patientInfo: PatientInfo;
@@ -14,7 +13,7 @@ interface PatientInfoSectionProps {
 export function PatientInfoSection({ patientInfo, onChange }: PatientInfoSectionProps) {
   return (
     <div className="space-y-4">
-      <SectionHeaderWithPreview title="Information du Patient" preview={<Empty />} />
+      <SectionHeader title="Information du Patient" />
       <div className="grid gap-2">
         <div className="space-y-1">
           <Label htmlFor="patient-name" className="text-xs text-muted-foreground">

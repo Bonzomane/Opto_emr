@@ -3,8 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
-import { SectionHeaderWithPreview } from './SectionHeaderWithPreview';
-import { DropsDisplay } from '@/print/sectionDisplays';
+import { SectionHeader } from './SectionHeader';
 
 interface DropsSectionProps {
   drops: Drops;
@@ -16,10 +15,7 @@ interface DropsSectionProps {
 export function DropsSection({ drops, onChange }: DropsSectionProps) {
   return (
     <div className="space-y-6">
-      <SectionHeaderWithPreview
-        title="Gouttes"
-        preview={<DropsDisplay drops={drops} />}
-      />
+      <SectionHeader title="Gouttes" />
 
       {/* Dilatation */}
       <div className="space-y-3">
