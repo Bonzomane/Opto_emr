@@ -6,7 +6,7 @@ import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
 import { SectionHeader } from './SectionHeader';
 import { cn } from '@/lib/utils';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 
 interface RefractionSectionProps {
   refraction: RefractionData;
@@ -91,12 +91,14 @@ function NumpadPopup({
   const btnSmClass = "w-10 h-8 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200 flex items-center justify-center";
 
   return (
-    <div 
-      className="absolute left-0 top-full z-50 rounded-md border border-border bg-white p-2"
-      style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
-    >
-      {/* Grid layout: 4 rows x N columns */}
-      <div className="flex gap-1">
+    <div className="absolute left-0 top-full z-50 pt-2">
+      {/* Invisible bridge area for Amazon-style hover */}
+      <div 
+        className="rounded-md border border-border bg-white p-2"
+        style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+      >
+        {/* Grid layout: 4 rows x N columns */}
+        <div className="flex gap-1">
         {/* Column 1-3: Numbers 1-9, then 0/</C */}
         <div className="flex flex-col gap-px">
           <div className="flex gap-px">
@@ -156,6 +158,7 @@ function NumpadPopup({
             </button>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
@@ -181,41 +184,16 @@ function RxField({
 }) {
   const [showNumpad, setShowNumpad] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
-  const hideTimeoutRef = useRef<number | null>(null);
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current);
-      }
-    };
-  }, []);
 
   const handleMouseEnter = () => {
-    // Cancel any pending hide
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-      hideTimeoutRef.current = null;
-    }
     if (!isLocked) setShowNumpad(true);
   };
 
   const handleMouseLeave = () => {
-    if (isLocked) return;
-    // Delay hide by 150ms for forgiveness
-    hideTimeoutRef.current = window.setTimeout(() => {
-      setShowNumpad(false);
-      hideTimeoutRef.current = null;
-    }, 150);
+    if (!isLocked) setShowNumpad(false);
   };
 
   const handleClick = () => {
-    // Cancel any pending hide
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-      hideTimeoutRef.current = null;
-    }
     if (isLocked) {
       setIsLocked(false);
       setShowNumpad(false);
