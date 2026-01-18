@@ -124,10 +124,10 @@ function loadSessionsFromStorage(): PatientSession[] {
         },
         refraction: {
           rxOD: '', rxOS: '', addOD: '', addOS: '',
-          vertexOD: '', vertexOS: '', prismOD: '', prismOS: '',
+          finalRxOD: '', finalRxOS: '', finalAddOD: '', finalAddOS: '',
           avOD: '', avOS: '', avOU: '',
           dpVL: '', dpVP: '',
-          cycloUsed: false, cycloRxOD: '', cycloRxOS: '', cycloAgent: '',
+          cycloUsed: false, cycloRxOD: '', cycloRxOS: '', cycloAddOD: '', cycloAddOS: '', cycloAgent: '',
           notes: '',
           ...(session.refraction ?? {}),
         },

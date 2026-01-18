@@ -440,17 +440,38 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
     onChange({ [field]: current === value ? '' : value });
   };
 
-  // Parse current values
+  // Parse current subjective values
   const odParsed = parseRx(refraction.rxOD);
   const osParsed = parseRx(refraction.rxOS);
+
+  // Parse final Rx values (default to subjective if empty)
+  const finalOdParsed = parseRx(refraction.finalRxOD || refraction.rxOD);
+  const finalOsParsed = parseRx(refraction.finalRxOS || refraction.rxOS);
+  const finalAddOD = refraction.finalAddOD || refraction.addOD;
+  const finalAddOS = refraction.finalAddOS || refraction.addOS;
+
+  // Check if final differs from subjective
+  const finalDiffersFromSubjective = 
+    refraction.finalRxOD !== '' || refraction.finalRxOS !== '' || 
+    refraction.finalAddOD !== '' || refraction.finalAddOS !== '';
+
+  // Copy subjective to final
+  const copySubjectiveToFinal = () => {
+    onChange({
+      finalRxOD: refraction.rxOD,
+      finalRxOS: refraction.rxOS,
+      finalAddOD: refraction.addOD,
+      finalAddOS: refraction.addOS,
+    });
+  };
 
   return (
     <div className="space-y-6">
       <SectionHeader title="Réfraction" />
 
-      {/* Rx Finale */}
+      {/* Rx Subjective */}
       <div className="space-y-3">
-        <Label className="text-sm font-medium">Rx Subjective Finale</Label>
+        <Label className="text-sm font-medium">Rx Subjective</Label>
         <div className="space-y-4">
           <RxPicker
             label="OD"
@@ -475,6 +496,51 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
             onAddChange={(v) => onChange({ addOS: v })}
           />
         </div>
+      </div>
+
+      {/* Rx Finale - copies from subjective by default */}
+      <div className="space-y-3 border-t border-border pt-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-medium">Rx Finale</Label>
+          {finalDiffersFromSubjective && (
+            <button
+              type="button"
+              onClick={copySubjectiveToFinal}
+              className="text-xs text-primary hover:underline"
+            >
+              ← Copier Rx Subjective
+            </button>
+          )}
+        </div>
+        <div className="space-y-4">
+          <RxPicker
+            label="OD"
+            sphere={finalOdParsed.sphere}
+            cylinder={finalOdParsed.cylinder}
+            axis={finalOdParsed.axis}
+            add={finalAddOD}
+            onSphereChange={(v) => onChange({ finalRxOD: combineRx(v, finalOdParsed.cylinder, finalOdParsed.axis) })}
+            onCylinderChange={(v) => onChange({ finalRxOD: combineRx(finalOdParsed.sphere, v, finalOdParsed.axis) })}
+            onAxisChange={(v) => onChange({ finalRxOD: combineRx(finalOdParsed.sphere, finalOdParsed.cylinder, v) })}
+            onAddChange={(v) => onChange({ finalAddOD: v })}
+          />
+          <RxPicker
+            label="OS"
+            sphere={finalOsParsed.sphere}
+            cylinder={finalOsParsed.cylinder}
+            axis={finalOsParsed.axis}
+            add={finalAddOS}
+            onSphereChange={(v) => onChange({ finalRxOS: combineRx(v, finalOsParsed.cylinder, finalOsParsed.axis) })}
+            onCylinderChange={(v) => onChange({ finalRxOS: combineRx(finalOsParsed.sphere, v, finalOsParsed.axis) })}
+            onAxisChange={(v) => onChange({ finalRxOS: combineRx(finalOsParsed.sphere, finalOsParsed.cylinder, v) })}
+            onAddChange={(v) => onChange({ finalAddOS: v })}
+          />
+        </div>
+        {!finalDiffersFromSubjective && (
+          <p className="text-xs text-muted-foreground italic">
+            Utilise les valeurs de Rx Subjective par défaut
+          </p>
+        )}
       </div>
 
       {/* AV avec Rx finale */}
@@ -601,43 +667,51 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
           />
         </div>
 
-        {refraction.cycloUsed && (
-          <div className="pl-4 border-l-2 border-primary/20 space-y-3">
-            <div>
-              <Label className="text-xs text-muted-foreground">Agent</Label>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {CYCLO_AGENTS.map((agent) => (
-                  <QuickSelectButton
-                    key={agent}
-                    label={agent.split(' ')[0]}
-                    selected={refraction.cycloAgent === agent}
-                    onClick={() => onChange({ cycloAgent: refraction.cycloAgent === agent ? '' : agent })}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+        {refraction.cycloUsed && (() => {
+          const cycloOdParsed = parseRx(refraction.cycloRxOD);
+          const cycloOsParsed = parseRx(refraction.cycloRxOS);
+          return (
+            <div className="pl-4 border-l-2 border-primary/20 space-y-4">
               <div>
-                <Label className="text-xs text-muted-foreground">Rx Cyclo OD</Label>
-                <Input
-                  value={refraction.cycloRxOD}
-                  onChange={(e) => onChange({ cycloRxOD: e.target.value })}
-                  placeholder="+1.00 -0.50 x 90"
-                  className="mt-1 font-mono text-sm"
+                <Label className="text-xs text-muted-foreground">Agent</Label>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {CYCLO_AGENTS.map((agent) => (
+                    <QuickSelectButton
+                      key={agent}
+                      label={agent.split(' ')[0]}
+                      selected={refraction.cycloAgent === agent}
+                      onClick={() => onChange({ cycloAgent: refraction.cycloAgent === agent ? '' : agent })}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-4">
+                <RxPicker
+                  label="OD"
+                  sphere={cycloOdParsed.sphere}
+                  cylinder={cycloOdParsed.cylinder}
+                  axis={cycloOdParsed.axis}
+                  add={refraction.cycloAddOD}
+                  onSphereChange={(v) => onChange({ cycloRxOD: combineRx(v, cycloOdParsed.cylinder, cycloOdParsed.axis) })}
+                  onCylinderChange={(v) => onChange({ cycloRxOD: combineRx(cycloOdParsed.sphere, v, cycloOdParsed.axis) })}
+                  onAxisChange={(v) => onChange({ cycloRxOD: combineRx(cycloOdParsed.sphere, cycloOdParsed.cylinder, v) })}
+                  onAddChange={(v) => onChange({ cycloAddOD: v })}
+                />
+                <RxPicker
+                  label="OS"
+                  sphere={cycloOsParsed.sphere}
+                  cylinder={cycloOsParsed.cylinder}
+                  axis={cycloOsParsed.axis}
+                  add={refraction.cycloAddOS}
+                  onSphereChange={(v) => onChange({ cycloRxOS: combineRx(v, cycloOsParsed.cylinder, cycloOsParsed.axis) })}
+                  onCylinderChange={(v) => onChange({ cycloRxOS: combineRx(cycloOsParsed.sphere, v, cycloOsParsed.axis) })}
+                  onAxisChange={(v) => onChange({ cycloRxOS: combineRx(cycloOsParsed.sphere, cycloOsParsed.cylinder, v) })}
+                  onAddChange={(v) => onChange({ cycloAddOS: v })}
                 />
               </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">Rx Cyclo OS</Label>
-                <Input
-                  value={refraction.cycloRxOS}
-                  onChange={(e) => onChange({ cycloRxOS: e.target.value })}
-                  placeholder="+1.00 -0.50 x 90"
-                  className="mt-1 font-mono text-sm"
-                />
-              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
 
       <CollapsibleNotes

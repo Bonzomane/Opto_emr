@@ -132,15 +132,17 @@ export const OBJECTIVE_REFRACTION_METHODS = ['Autoréfracteur', 'Skiascopie'] as
 // ============================================
 
 export interface RefractionData {
-  // Réfraction subjective finale
+  // Réfraction subjective
   rxOD: string; // e.g., "-2.00 -0.50 x 180"
   rxOS: string;
   addOD: string;
   addOS: string;
-  vertexOD: string;
-  vertexOS: string;
-  prismOD: string;
-  prismOS: string;
+  
+  // Rx Finale (by default copies from subjective, but can be modified)
+  finalRxOD: string;
+  finalRxOS: string;
+  finalAddOD: string;
+  finalAddOS: string;
   
   // AV avec Rx finale
   avOD: string;
@@ -155,6 +157,8 @@ export interface RefractionData {
   cycloUsed: boolean;
   cycloRxOD: string;
   cycloRxOS: string;
+  cycloAddOD: string;
+  cycloAddOS: string;
   cycloAgent: string; // cyclopentolate, tropicamide, atropine
   
   notes: string;
