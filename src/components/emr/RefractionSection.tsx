@@ -6,7 +6,7 @@ import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
 import { SectionHeader } from './SectionHeader';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface RefractionSectionProps {
   refraction: RefractionData;
@@ -29,22 +29,367 @@ const VA_OPTIONS = [
 
 const VA_COMMON = ['6/6', '6/7.5', '6/9', '6/12'];
 
-type SignValue = '+' | '-';
+type RxField = 'sphere' | 'cylinder' | 'axis' | 'add';
 
-const VALID_DECIMALS = ['00', '25', '50', '75'];
+// Simple numpad component that appears under a field
+function NumpadPopup({
+  value,
+  onChange,
+  fieldType,
+  sign,
+  onSignToggle,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  fieldType: 'power' | 'axis';
+  sign?: '+' | '-';
+  onSignToggle?: () => void;
+}) {
+  const appendDigit = (digit: string) => {
+    const current = value.replace(/[^0-9.]/g, '');
+    // For axis, max 3 digits
+    if (fieldType === 'axis' && current.replace('.', '').length >= 3) return;
+    // For power, max length with decimal
+    if (fieldType === 'power' && current.length >= 5) return;
+    
+    const newValue = current + digit;
+    if (fieldType === 'power' && sign) {
+      onChange(sign + newValue);
+    } else {
+      onChange(newValue);
+    }
+  };
 
-// Auto-complete partial decimal: typing just the first digit completes the pattern
-const DECIMAL_AUTOCOMPLETE: Record<string, string> = {
-  '0': '00', '2': '25', '5': '50', '7': '75'
-};
+  const appendDecimal = (decimal: string) => {
+    // Append .25, .50, or .75 to current integer part
+    const current = value.replace(/[^0-9]/g, '');
+    const intPart = current || '0';
+    const newValue = intPart + decimal;
+    if (fieldType === 'power' && sign) {
+      onChange(sign + newValue);
+    } else {
+      onChange(newValue);
+    }
+  };
 
-function inferSign(value: string, fallback: SignValue): SignValue {
-  if (value.includes('-')) return '-';
-  if (value.includes('+')) return '+';
-  return fallback;
+  const backspace = () => {
+    const current = value.replace(/[^0-9.]/g, '');
+    const newValue = current.slice(0, -1);
+    if (fieldType === 'power' && sign && newValue) {
+      onChange(sign + newValue);
+    } else {
+      onChange(newValue);
+    }
+  };
+
+  const clear = () => {
+    onChange('');
+  };
+
+  return (
+    <div 
+      className="absolute left-0 top-full z-50 mt-1 rounded-md border border-border bg-white p-2"
+      style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+    >
+      <div className="flex gap-1">
+        {/* Main 3x3 numpad */}
+        <div className="grid grid-cols-3 gap-px">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+            <button
+              key={num}
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); appendDigit(String(num)); }}
+              className="w-7 h-7 text-sm font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
+            >
+              {num}
+            </button>
+          ))}
+        </div>
+
+        {/* Control column: backspace, 0, clear */}
+        <div className="grid grid-rows-3 gap-px">
+          <button
+            type="button"
+            onMouseDown={(e) => { e.preventDefault(); backspace(); }}
+            className="w-7 h-7 text-sm font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
+          >
+            &lt;
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => { e.preventDefault(); appendDigit('0'); }}
+            className="w-7 h-7 text-sm font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
+          >
+            0
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => { e.preventDefault(); clear(); }}
+            className="w-7 h-7 text-sm font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
+          >
+            C
+          </button>
+        </div>
+
+        {/* Decimal column for power fields */}
+        {fieldType === 'power' && (
+          <div className="grid grid-rows-3 gap-px">
+            <button
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); appendDecimal('.25'); }}
+              className="w-9 h-7 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
+            >
+              .25
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); appendDecimal('.50'); }}
+              className="w-9 h-7 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
+            >
+              .50
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); appendDecimal('.75'); }}
+              className="w-9 h-7 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
+            >
+              .75
+            </button>
+          </div>
+        )}
+
+        {/* Sign toggle for power fields */}
+        {fieldType === 'power' && onSignToggle && (
+          <div className="grid grid-rows-3 gap-px">
+            <button
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); onSignToggle(); }}
+              className={cn(
+                "w-7 h-7 text-sm font-bold rounded border",
+                sign === '-' ? 'bg-zinc-800 text-white border-zinc-800' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
+              )}
+            >
+              −
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); onSignToggle(); }}
+              className={cn(
+                "w-7 h-7 text-sm font-bold rounded border",
+                sign === '+' ? 'bg-zinc-800 text-white border-zinc-800' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
+              )}
+            >
+              +
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); appendDecimal('.00'); }}
+              className="w-7 h-7 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
+            >
+              .00
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-// Parse a prescription string like "-1.25 / -0.50 x 180" into parts
+// Single field with hover-triggered numpad
+function RxField({
+  label,
+  value,
+  onChange,
+  fieldType,
+  sign,
+  onSignToggle,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  fieldType: 'power' | 'axis';
+  sign?: '+' | '-';
+  onSignToggle?: () => void;
+  placeholder: string;
+}) {
+  const [showNumpad, setShowNumpad] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+
+  const handleMouseEnter = () => {
+    if (!isLocked) setShowNumpad(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (!isLocked) setShowNumpad(false);
+  };
+
+  const handleClick = () => {
+    if (isLocked) {
+      setIsLocked(false);
+      setShowNumpad(false);
+    } else {
+      setIsLocked(true);
+      setShowNumpad(true);
+    }
+  };
+
+  return (
+    <div 
+      className="relative inline-block"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div className="flex items-center gap-1">
+        <span className="text-xs text-muted-foreground w-8">{label}</span>
+        {fieldType === 'power' && sign && (
+          <button
+            type="button"
+            onClick={onSignToggle}
+            className="h-8 w-7 rounded border border-border bg-white text-sm font-mono hover:bg-muted"
+          >
+            {sign}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={handleClick}
+          className={cn(
+            'h-8 min-w-[70px] rounded border px-2 text-sm font-mono text-left',
+            showNumpad ? 'border-primary ring-1 ring-primary bg-primary/5' : 'border-border bg-background'
+          )}
+        >
+          {value || placeholder}
+          {isLocked && <span className="ml-1 text-primary">🔒</span>}
+        </button>
+      </div>
+
+      {showNumpad && (
+        <NumpadPopup
+          value={value}
+          onChange={onChange}
+          fieldType={fieldType}
+          sign={sign}
+          onSignToggle={onSignToggle}
+        />
+      )}
+    </div>
+  );
+}
+
+// Full Rx input for one eye
+function RxPicker({
+  label,
+  sphere,
+  cylinder,
+  axis,
+  add,
+  onSphereChange,
+  onCylinderChange,
+  onAxisChange,
+  onAddChange,
+}: {
+  label: string;
+  sphere: string;
+  cylinder: string;
+  axis: string;
+  add: string;
+  onSphereChange: (v: string) => void;
+  onCylinderChange: (v: string) => void;
+  onAxisChange: (v: string) => void;
+  onAddChange: (v: string) => void;
+}) {
+  const [sphSign, setSphSign] = useState<'+' | '-'>(() => sphere.includes('+') ? '+' : '-');
+  const [cylSign, setCylSign] = useState<'+' | '-'>(() => cylinder.includes('+') ? '+' : '-');
+  const [addSign, setAddSign] = useState<'+' | '-'>(() => add.includes('-') ? '-' : '+');
+
+  const handleSphereChange = (v: string) => {
+    onSphereChange(v);
+  };
+
+  const handleCylinderChange = (v: string) => {
+    onCylinderChange(v);
+  };
+
+  const handleAxisChange = (v: string) => {
+    // Clamp axis to 0-180
+    const num = parseInt(v.replace(/\D/g, ''), 10);
+    if (!isNaN(num) && num > 180) {
+      onAxisChange('180');
+    } else {
+      onAxisChange(v);
+    }
+  };
+
+  const handleAddChange = (v: string) => {
+    onAddChange(v);
+  };
+
+  return (
+    <div className="space-y-2">
+      <span className="text-sm font-bold">{label}</span>
+      <div className="flex flex-wrap items-start gap-4">
+        <RxField
+          label="Sph"
+          value={sphere}
+          onChange={handleSphereChange}
+          fieldType="power"
+          sign={sphSign}
+          onSignToggle={() => {
+            const newSign = sphSign === '-' ? '+' : '-';
+            setSphSign(newSign);
+            if (sphere) {
+              const digits = sphere.replace(/[^0-9.]/g, '');
+              onSphereChange(newSign + digits);
+            }
+          }}
+          placeholder="0.00"
+        />
+        <RxField
+          label="Cyl"
+          value={cylinder}
+          onChange={handleCylinderChange}
+          fieldType="power"
+          sign={cylSign}
+          onSignToggle={() => {
+            const newSign = cylSign === '-' ? '+' : '-';
+            setCylSign(newSign);
+            if (cylinder) {
+              const digits = cylinder.replace(/[^0-9.]/g, '');
+              onCylinderChange(newSign + digits);
+            }
+          }}
+          placeholder="0.00"
+        />
+        <RxField
+          label="Axe"
+          value={axis}
+          onChange={handleAxisChange}
+          fieldType="axis"
+          placeholder="180"
+        />
+        <RxField
+          label="Add"
+          value={add}
+          onChange={handleAddChange}
+          fieldType="power"
+          sign={addSign}
+          onSignToggle={() => {
+            const newSign = addSign === '-' ? '+' : '-';
+            setAddSign(newSign);
+            if (add) {
+              const digits = add.replace(/[^0-9.]/g, '');
+              onAddChange(newSign + digits);
+            }
+          }}
+          placeholder="0.00"
+        />
+      </div>
+    </div>
+  );
+}
+
+// Parse Rx string like "-1.25 / -0.50 x 180" into parts
 function parseRx(rx: string): { sphere: string; cylinder: string; axis: string } {
   const parts = rx.split(/[\/x]/).map(p => p.trim());
   return {
@@ -66,512 +411,15 @@ function combineRx(sphere: string, cylinder: string, axis: string): string {
   return result;
 }
 
-function formatPowerFromDigits(digits: string, sign: SignValue): string {
-  if (!digits) return '';
-  const len = digits.length;
-  if (len === 1) {
-    const result = `${sign}${digits}.00`;
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len=1',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
-    // #endregion
-    return result;
-  }
-  if (len === 2) {
-    const second = digits[1];
-    if (DECIMAL_AUTOCOMPLETE[second]) {
-      const result = `${sign}${digits[0]}.${DECIMAL_AUTOCOMPLETE[second]}`;
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len=2 autocomplete',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
-      // #endregion
-      return result;
-    }
-    const result = `${sign}${digits}.00`;
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len=2 pad',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
-    // #endregion
-    return result;
-  }
-  if (len === 3) {
-    const dec = digits.slice(1);
-    if (VALID_DECIMALS.includes(dec)) {
-      const result = `${sign}${digits[0]}.${dec}`;
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len=3 valid',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
-      // #endregion
-      return result;
-    }
-    const secondDec = DECIMAL_AUTOCOMPLETE[digits[1]];
-    if (secondDec) {
-      const result = `${sign}${digits[0]}.${secondDec}`;
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len=3 autocomplete',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
-      // #endregion
-      return result;
-    }
-    const result = `${sign}${digits[0]}.${dec}`;
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len=3 fallback',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
-    // #endregion
-    return result;
-  }
-  const int = digits.slice(0, 2);
-  const dec = digits.slice(2);
-  const result = `${sign}${int}.${dec}`;
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len>=4',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
-  // #endregion
-  return result;
-}
-
-function formatAxisFromDigits(digits: string): string {
-  if (!digits) return '';
-  const num = parseInt(digits, 10);
-  return Math.min(180, num).toString();
-}
-type RxField = 'sphere' | 'cylinder' | 'axis' | 'add' | 'vertex' | 'prism';
-
-const MAX_POWER_DIGITS = 4;
-const MAX_AXIS_DIGITS = 3;
-const MAX_OPTION_DIGITS = 3;
-
-function appendDigits(current: string, digit: string, max: number) {
-  if (current.length >= max) return current;
-  return `${current}${digit}`;
-}
-
-function backspaceDigits(current: string) {
-  if (!current) return '';
-  return current.slice(0, -1);
-}
-
-// Full Rx input for one eye with numpad
-function RxPicker({
-  label,
-  value,
-  add,
-  vertex,
-  prism,
-  onChange,
-  onAddChange,
-  onVertexChange,
-  onPrismChange,
-}: {
-  label: string;
-  value: string;
-  add: string;
-  vertex: string;
-  prism: string;
-  onChange: (v: string) => void;
-  onAddChange: (v: string) => void;
-  onVertexChange: (v: string) => void;
-  onPrismChange: (v: string) => void;
-}) {
-  const parsed = parseRx(value);
-  const [rxSign, setRxSign] = useState<SignValue>(() => inferSign(value, '-'));
-  const [cylSign, setCylSign] = useState<SignValue>(() => inferSign(parsed.cylinder, '-'));
-  const [addSign, setAddSign] = useState<SignValue>(() => inferSign(add, '+'));
-  const [activeField, setActiveField] = useState<RxField | null>(null);
-  const [showExtras, setShowExtras] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
-  const [sphere, setSphere] = useState(parsed.sphere);
-  const [cylinder, setCylinder] = useState(parsed.cylinder);
-  const [axis, setAxis] = useState(parsed.axis);
-
-  useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:useEffect[value]',message:'useEffect syncing from props',data:{propValue:value,parsedSphere:parseRx(value).sphere},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
-    const parsed = parseRx(value);
-    setSphere(parsed.sphere);
-    setCylinder(parsed.cylinder);
-    setAxis(parsed.axis);
-    setRxSign((current) => inferSign(value, current));
-    setCylSign((current) => inferSign(parsed.cylinder, current));
-  }, [value]);
-
-  useEffect(() => {
-    setAddSign((current) => inferSign(add, current));
-  }, [add]);
-
-  useEffect(() => {
-    if (!showExtras && (activeField === 'vertex' || activeField === 'prism')) {
-      setActiveField(null);
-    }
-  }, [showExtras, activeField]);
-
-  const handleFieldClick = (field: RxField) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:handleFieldClick',message:'handleFieldClick called',data:{field,currentActiveField:activeField,isLocked},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B3'})}).catch(()=>{});
-    // #endregion
-    if (activeField === field && isLocked) {
-      // Clicking same field when locked = unlock and close
-      setIsLocked(false);
-      setActiveField(null);
-    } else {
-      // Lock to this field
-      setIsLocked(true);
-      setActiveField(field);
-    }
-  };
-
-  const handleFieldHover = (field: RxField) => {
-    if (!isLocked) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:handleFieldHover',message:'handleFieldHover',data:{field,isLocked,activeField},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'G'})}).catch(()=>{});
-      // #endregion
-      setActiveField(field);
-    }
-  };
-
-  const handleFieldLeave = () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:handleFieldLeave',message:'handleFieldLeave called',data:{isLocked,activeField},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-    if (!isLocked) {
-      setActiveField(null);
-    }
-  };
-
-  const updateRx = (newSphere: string, newCylinder: string, newAxis: string) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:updateRx',message:'updateRx called',data:{newSphere,newCylinder,newAxis,combined:combineRx(newSphere,newCylinder,newAxis)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
-    setSphere(newSphere);
-    setCylinder(newCylinder);
-    setAxis(newAxis);
-    onChange(combineRx(newSphere, newCylinder, newAxis));
-  };
-
-  const applyPowerDigits = (current: string, sign: SignValue, digit: string) => {
-    const digits = current.replace(/\D/g, '');
-    const nextDigits = appendDigits(digits, digit, MAX_POWER_DIGITS);
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:applyPowerDigits:internal',message:'applyPowerDigits internal',data:{current,digits,digit,nextDigits,maxDigits:MAX_POWER_DIGITS},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C2'})}).catch(()=>{});
-    // #endregion
-    return formatPowerFromDigits(nextDigits, sign);
-  };
-
-  const backspacePowerDigits = (current: string, sign: SignValue) => {
-    const digits = current.replace(/\D/g, '');
-    const nextDigits = backspaceDigits(digits);
-    return formatPowerFromDigits(nextDigits, sign);
-  };
-
-  const applyAxisDigits = (current: string, digit: string) => {
-    const digits = current.replace(/\D/g, '');
-    const nextDigits = appendDigits(digits, digit, MAX_AXIS_DIGITS);
-    return formatAxisFromDigits(nextDigits);
-  };
-
-  const backspaceAxisDigits = (current: string) => {
-    const digits = current.replace(/\D/g, '');
-    const nextDigits = backspaceDigits(digits);
-    return formatAxisFromDigits(nextDigits);
-  };
-
-  const applyOptionDigits = (current: string, digit: string) => {
-    const digits = current.replace(/\D/g, '');
-    const nextDigits = appendDigits(digits, digit, MAX_OPTION_DIGITS);
-    return nextDigits || '';
-  };
-
-  const backspaceOptionDigits = (current: string) => {
-    const digits = current.replace(/\D/g, '');
-    return backspaceDigits(digits);
-  };
-
-  const toggleSign = (field: 'sphere' | 'cylinder' | 'add') => {
-    if (field === 'sphere') {
-      const next = rxSign === '-' ? '+' : '-';
-      setRxSign(next);
-      if (sphere) {
-        const digits = sphere.replace(/\D/g, '');
-        updateRx(formatPowerFromDigits(digits, next), cylinder, axis);
-      }
-      return;
-    }
-    if (field === 'cylinder') {
-      const next = cylSign === '-' ? '+' : '-';
-      setCylSign(next);
-      if (cylinder) {
-        const digits = cylinder.replace(/\D/g, '');
-        updateRx(sphere, formatPowerFromDigits(digits, next), axis);
-      }
-      return;
-    }
-    const next = addSign === '-' ? '+' : '-';
-    setAddSign(next);
-    if (add) {
-      const digits = add.replace(/\D/g, '');
-      onAddChange(formatPowerFromDigits(digits, next));
-    }
-  };
-
-  const appendDigit = (digit: number) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:appendDigit',message:'appendDigit called',data:{digit,activeField,sphere,cylinder,axis},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
-    if (!activeField) return;
-    const nextDigit = String(digit);
-    switch (activeField) {
-      case 'sphere':
-        // #region agent log
-        const newSphereValue = applyPowerDigits(sphere, rxSign, nextDigit);
-        fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:appendDigit:sphere',message:'sphere applyPowerDigits result',data:{currentSphere:sphere,rxSign,nextDigit,newSphereValue},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
-        // #endregion
-        updateRx(newSphereValue, cylinder, axis);
-        break;
-      case 'cylinder':
-        updateRx(sphere, applyPowerDigits(cylinder, cylSign, nextDigit), axis);
-        break;
-      case 'axis':
-        updateRx(sphere, cylinder, applyAxisDigits(axis, nextDigit));
-        break;
-      case 'add':
-        onAddChange(applyPowerDigits(add, addSign, nextDigit));
-        break;
-      case 'vertex':
-        onVertexChange(applyOptionDigits(vertex, nextDigit));
-        break;
-      case 'prism':
-        onPrismChange(applyOptionDigits(prism, nextDigit));
-        break;
-    }
-  };
-
-  const backspaceActive = () => {
-    if (!activeField) return;
-    switch (activeField) {
-      case 'sphere':
-        updateRx(backspacePowerDigits(sphere, rxSign), cylinder, axis);
-        break;
-      case 'cylinder':
-        updateRx(sphere, backspacePowerDigits(cylinder, cylSign), axis);
-        break;
-      case 'axis':
-        updateRx(sphere, cylinder, backspaceAxisDigits(axis));
-        break;
-      case 'add':
-        onAddChange(backspacePowerDigits(add, addSign));
-        break;
-      case 'vertex':
-        onVertexChange(backspaceOptionDigits(vertex));
-        break;
-      case 'prism':
-        onPrismChange(backspaceOptionDigits(prism));
-        break;
-    }
-  };
-
-  const clearActive = () => {
-    if (!activeField) return;
-    switch (activeField) {
-      case 'sphere':
-        updateRx('', cylinder, axis);
-        break;
-      case 'cylinder':
-        updateRx(sphere, '', axis);
-        break;
-      case 'axis':
-        updateRx(sphere, cylinder, '');
-        break;
-      case 'add':
-        onAddChange('');
-        break;
-      case 'vertex':
-        onVertexChange('');
-        break;
-      case 'prism':
-        onPrismChange('');
-        break;
-    }
-  };
-
-  const fieldButtonClass = (field: RxField) =>
-    cn(
-      'h-8 min-w-[60px] rounded border px-2 text-sm font-mono',
-      activeField === field
-        ? 'border-primary ring-1 ring-primary bg-primary/5'
-        : 'border-border bg-background'
-    );
-
-  return (
-    <div className="space-y-2">
-      <span className="text-sm font-bold">{label}</span>
-
-      <div className="relative" onMouseLeave={handleFieldLeave}>
-        <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/20 px-2 py-2">
-          <button
-            type="button"
-            onClick={() => toggleSign('sphere')}
-            className="h-7 w-8 rounded border border-border bg-white text-sm font-mono hover:bg-muted"
-          >
-            {rxSign}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleFieldClick('sphere')}
-            onMouseEnter={() => handleFieldHover('sphere')}
-            className={fieldButtonClass('sphere')}
-          >
-            {sphere || '0.00'}
-          </button>
-
-          <span className="text-xs text-muted-foreground">/</span>
-
-          <button
-            type="button"
-            onClick={() => toggleSign('cylinder')}
-            className="h-7 w-8 rounded border border-border bg-white text-sm font-mono hover:bg-muted"
-          >
-            {cylSign}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleFieldClick('cylinder')}
-            onMouseEnter={() => handleFieldHover('cylinder')}
-            className={fieldButtonClass('cylinder')}
-          >
-            {cylinder || '0.00'}
-          </button>
-
-          <span className="text-xs text-muted-foreground">x</span>
-
-          <button
-            type="button"
-            onClick={() => handleFieldClick('axis')}
-            onMouseEnter={() => handleFieldHover('axis')}
-            className={fieldButtonClass('axis')}
-          >
-            {axis || '180'}
-          </button>
-
-          <span className="text-xs text-muted-foreground">ADD</span>
-          <button
-            type="button"
-            onClick={() => toggleSign('add')}
-            className="h-7 w-8 rounded border border-border bg-white text-sm font-mono hover:bg-muted"
-          >
-            {addSign}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleFieldClick('add')}
-            onMouseEnter={() => handleFieldHover('add')}
-            className={fieldButtonClass('add')}
-          >
-            {add || '0.00'}
-          </button>
-
-          {showExtras && (
-            <>
-              <span className="text-xs text-muted-foreground">VTX</span>
-              <button
-                type="button"
-                onClick={() => handleFieldClick('vertex')}
-                onMouseEnter={() => handleFieldHover('vertex')}
-                className={fieldButtonClass('vertex')}
-              >
-                {vertex || '--'}
-              </button>
-
-              <span className="text-xs text-muted-foreground">PR</span>
-              <button
-                type="button"
-                onClick={() => handleFieldClick('prism')}
-                onMouseEnter={() => handleFieldHover('prism')}
-                className={fieldButtonClass('prism')}
-              >
-                {prism || '--'}
-              </button>
-            </>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setShowExtras((prev) => !prev)}
-            className="ml-auto h-7 rounded border border-border bg-white px-2 text-xs text-muted-foreground hover:bg-muted"
-          >
-            {showExtras ? 'Options -' : 'Options +'}
-          </button>
-        </div>
-
-        {activeField && (
-          <div 
-            className="absolute left-0 top-full z-50 rounded-md border border-border bg-white p-2"
-            style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)', marginTop: '-1px' }}
-            onMouseEnter={() => { 
-              // #region agent log
-              fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:numpad:mouseEnter',message:'numpad mouseEnter',data:{isLocked,activeField},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A2'})}).catch(()=>{});
-              // #endregion
-              if (!isLocked) setActiveField(activeField); 
-            }}
-            // #region agent log
-            onMouseDown={() => {
-              fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:numpad:mouseDown',message:'numpad mouseDown',data:{activeField,isLocked},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B4'})}).catch(()=>{});
-            }}
-            // #endregion
-          >
-            <div className="text-[10px] text-muted-foreground mb-1 text-center uppercase font-medium flex items-center justify-center gap-1">
-              <span>{activeField === 'sphere' ? 'Sphère' : activeField === 'cylinder' ? 'Cylindre' : activeField === 'axis' ? 'Axe' : activeField === 'add' ? 'Addition' : activeField === 'vertex' ? 'Vertex' : 'Prisme'}</span>
-              {isLocked && <span className="text-primary">🔒</span>}
-            </div>
-            <div className="flex gap-px">
-              <div className="grid grid-cols-3 gap-px">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                  <button
-                    key={num}
-                    type="button"
-                    onMouseDown={(e) => { 
-                      // #region agent log
-                      fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:numpad:button',message:'button onMouseDown',data:{num,activeField},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B2'})}).catch(()=>{});
-                      // #endregion
-                      e.preventDefault(); 
-                      appendDigit(num); 
-                    }}
-                    className="w-6 h-6 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
-                  >
-                    {num}
-                  </button>
-                ))}
-              </div>
-              <div className="grid grid-rows-3 gap-px ml-px">
-                <button
-                  type="button"
-                  onMouseDown={(e) => { e.preventDefault(); backspaceActive(); }}
-                  className="w-6 h-6 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
-                  aria-label="Retour"
-                >
-                  &lt;
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => { e.preventDefault(); appendDigit(0); }}
-                  className="w-6 h-6 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
-                >
-                  0
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => { e.preventDefault(); clearActive(); }}
-                  className="w-6 h-6 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
-                >
-                  C
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export function RefractionSection({ refraction, onChange }: RefractionSectionProps) {
   const handleVASelect = (field: keyof RefractionData, value: string) => {
     const current = refraction[field];
     onChange({ [field]: current === value ? '' : value });
   };
+
+  // Parse current values
+  const odParsed = parseRx(refraction.rxOD);
+  const osParsed = parseRx(refraction.rxOS);
 
   return (
     <div className="space-y-6">
@@ -580,28 +428,28 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
       {/* Rx Finale */}
       <div className="space-y-3">
         <Label className="text-sm font-medium">Rx Subjective Finale</Label>
-        <div className="space-y-3">
+        <div className="space-y-4">
           <RxPicker
             label="OD"
-            value={refraction.rxOD}
+            sphere={odParsed.sphere}
+            cylinder={odParsed.cylinder}
+            axis={odParsed.axis}
             add={refraction.addOD}
-            vertex={refraction.vertexOD}
-            prism={refraction.prismOD}
-            onChange={(v) => onChange({ rxOD: v })}
+            onSphereChange={(v) => onChange({ rxOD: combineRx(v, odParsed.cylinder, odParsed.axis) })}
+            onCylinderChange={(v) => onChange({ rxOD: combineRx(odParsed.sphere, v, odParsed.axis) })}
+            onAxisChange={(v) => onChange({ rxOD: combineRx(odParsed.sphere, odParsed.cylinder, v) })}
             onAddChange={(v) => onChange({ addOD: v })}
-            onVertexChange={(v) => onChange({ vertexOD: v })}
-            onPrismChange={(v) => onChange({ prismOD: v })}
           />
           <RxPicker
             label="OS"
-            value={refraction.rxOS}
+            sphere={osParsed.sphere}
+            cylinder={osParsed.cylinder}
+            axis={osParsed.axis}
             add={refraction.addOS}
-            vertex={refraction.vertexOS}
-            prism={refraction.prismOS}
-            onChange={(v) => onChange({ rxOS: v })}
+            onSphereChange={(v) => onChange({ rxOS: combineRx(v, osParsed.cylinder, osParsed.axis) })}
+            onCylinderChange={(v) => onChange({ rxOS: combineRx(osParsed.sphere, v, osParsed.axis) })}
+            onAxisChange={(v) => onChange({ rxOS: combineRx(osParsed.sphere, osParsed.cylinder, v) })}
             onAddChange={(v) => onChange({ addOS: v })}
-            onVertexChange={(v) => onChange({ vertexOS: v })}
-            onPrismChange={(v) => onChange({ prismOS: v })}
           />
         </div>
       </div>
