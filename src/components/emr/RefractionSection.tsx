@@ -372,7 +372,7 @@ function RxPicker({
           value={axis}
           onChange={handleAxisChange}
           fieldType="axis"
-          placeholder="180"
+          placeholder="00"
         />
         <RxField
           label="Add"
