@@ -307,7 +307,7 @@ function MaddoxBuilder({
               className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
               aria-label="Retour"
             >
-              ⌫
+              ←
             </button>
             <button
               type="button"
@@ -492,7 +492,7 @@ function CoverTestBuilder({
               className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
               aria-label="Retour"
             >
-              ⌫
+              ←
             </button>
             <button
               type="button"
