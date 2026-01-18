@@ -70,29 +70,57 @@ function formatPowerFromDigits(digits: string, sign: SignValue): string {
   if (!digits) return '';
   const len = digits.length;
   if (len === 1) {
-    return `${sign}${digits}.00`;
+    const result = `${sign}${digits}.00`;
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len=1',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+    // #endregion
+    return result;
   }
   if (len === 2) {
     const second = digits[1];
     if (DECIMAL_AUTOCOMPLETE[second]) {
-      return `${sign}${digits[0]}.${DECIMAL_AUTOCOMPLETE[second]}`;
+      const result = `${sign}${digits[0]}.${DECIMAL_AUTOCOMPLETE[second]}`;
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len=2 autocomplete',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+      // #endregion
+      return result;
     }
-    return `${sign}${digits}.00`;
+    const result = `${sign}${digits}.00`;
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len=2 pad',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+    // #endregion
+    return result;
   }
   if (len === 3) {
     const dec = digits.slice(1);
     if (VALID_DECIMALS.includes(dec)) {
-      return `${sign}${digits[0]}.${dec}`;
+      const result = `${sign}${digits[0]}.${dec}`;
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len=3 valid',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+      // #endregion
+      return result;
     }
     const secondDec = DECIMAL_AUTOCOMPLETE[digits[1]];
     if (secondDec) {
-      return `${sign}${digits[0]}.${secondDec}`;
+      const result = `${sign}${digits[0]}.${secondDec}`;
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len=3 autocomplete',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+      // #endregion
+      return result;
     }
-    return `${sign}${digits[0]}.${dec}`;
+    const result = `${sign}${digits[0]}.${dec}`;
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len=3 fallback',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+    // #endregion
+    return result;
   }
   const int = digits.slice(0, 2);
   const dec = digits.slice(2);
-  return `${sign}${int}.${dec}`;
+  const result = `${sign}${int}.${dec}`;
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:formatPowerFromDigits',message:'formatPowerFromDigits len>=4',data:{digits,sign,result},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+  // #endregion
+  return result;
 }
 
 function formatAxisFromDigits(digits: string): string {
@@ -188,6 +216,9 @@ function RxPicker({
 
   const handleFieldHover = (field: RxField) => {
     if (!isLocked) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:handleFieldHover',message:'handleFieldHover',data:{field,isLocked,activeField},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'G'})}).catch(()=>{});
+      // #endregion
       setActiveField(field);
     }
   };
@@ -475,6 +506,11 @@ function RxPicker({
               // #endregion
               if (!isLocked) setActiveField(activeField); 
             }}
+            // #region agent log
+            onMouseDown={() => {
+              fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:numpad:mouseDown',message:'numpad mouseDown',data:{activeField,isLocked},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B4'})}).catch(()=>{});
+            }}
+            // #endregion
           >
             <div className="text-[10px] text-muted-foreground mb-1 text-center uppercase font-medium flex items-center justify-center gap-1">
               <span>{activeField === 'sphere' ? 'Sphère' : activeField === 'cylinder' ? 'Cylindre' : activeField === 'axis' ? 'Axe' : activeField === 'add' ? 'Addition' : activeField === 'vertex' ? 'Vertex' : 'Prisme'}</span>
