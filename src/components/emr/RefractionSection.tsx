@@ -252,6 +252,9 @@ function RxPicker({
   }, [showExtras, activeField]);
 
   const handleFieldClick = (field: RxField) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:handleFieldClick',message:'handleFieldClick called',data:{field,currentActiveField:activeField,isLocked},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B3'})}).catch(()=>{});
+    // #endregion
     if (activeField === field && isLocked) {
       // Clicking same field when locked = unlock and close
       setIsLocked(false);
@@ -551,7 +554,12 @@ function RxPicker({
           <div 
             className="absolute left-0 top-full mt-1 z-50 rounded-md border border-border bg-white p-2"
             style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
-            onMouseEnter={() => { if (!isLocked) setActiveField(activeField); }}
+            onMouseEnter={() => { 
+              // #region agent log
+              fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:numpad:mouseEnter',message:'numpad mouseEnter',data:{isLocked,activeField},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A2'})}).catch(()=>{});
+              // #endregion
+              if (!isLocked) setActiveField(activeField); 
+            }}
             onMouseLeave={handleFieldLeave}
           >
             <div className="text-[10px] text-muted-foreground mb-1 text-center uppercase font-medium flex items-center justify-center gap-1">
@@ -564,7 +572,13 @@ function RxPicker({
                   <button
                     key={num}
                     type="button"
-                    onMouseDown={(e) => { e.preventDefault(); appendDigit(num); }}
+                    onMouseDown={(e) => { 
+                      // #region agent log
+                      fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:numpad:button',message:'button onMouseDown',data:{num,activeField},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B2'})}).catch(()=>{});
+                      // #endregion
+                      e.preventDefault(); 
+                      appendDigit(num); 
+                    }}
                     className="w-6 h-6 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
                   >
                     {num}
