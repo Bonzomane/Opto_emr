@@ -224,6 +224,7 @@ function RxPicker({
   const [addSign, setAddSign] = useState<SignValue>(() => inferSign(add, '+'));
   const [activeField, setActiveField] = useState<RxField>('sphere');
   const [showExtras, setShowExtras] = useState(false);
+  const [showPad, setShowPad] = useState(false);
   const [sphere, setSphere] = useState(parsed.sphere);
   const [cylinder, setCylinder] = useState(parsed.cylinder);
   const [axis, setAxis] = useState(parsed.axis);
@@ -398,7 +399,11 @@ function RxPicker({
     <div className="space-y-2">
       <span className="text-sm font-bold">{label}</span>
 
-      <div className="relative group">
+      <div
+        className="relative"
+        onMouseEnter={() => setShowPad(true)}
+        onMouseLeave={() => setShowPad(false)}
+      >
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/20 px-2 py-2">
           <button
             type="button"
@@ -489,7 +494,14 @@ function RxPicker({
           </button>
         </div>
 
-        <div className="absolute right-0 top-0 z-10 translate-x-[calc(100%+8px)] opacity-0 pointer-events-none transition-opacity duration-150 group-hover:opacity-100 group-hover:pointer-events-auto">
+        <div
+          className={cn(
+            'absolute right-0 top-0 z-10 translate-x-[calc(100%+8px)] transition-opacity duration-150',
+            showPad ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          )}
+          onMouseEnter={() => setShowPad(true)}
+          onMouseLeave={() => setShowPad(false)}
+        >
           <div className="rounded-md border border-border bg-white p-2 shadow-sm">
             <div className="grid grid-cols-[repeat(3,1.25rem)] gap-px">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
