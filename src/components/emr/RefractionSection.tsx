@@ -494,15 +494,12 @@ function RxPicker({
           </button>
         </div>
 
-        <div
-          className={cn(
-            'absolute right-0 top-0 z-10 translate-x-[calc(100%+8px)] transition-opacity duration-150',
-            showPad ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-          )}
-          onMouseEnter={() => setShowPad(true)}
-          onMouseLeave={() => setShowPad(false)}
-        >
-          <div className="rounded-md border border-border bg-white p-2 shadow-sm">
+        {showPad && (
+          <div
+            className="mt-2 inline-block rounded-md border border-border bg-white p-2 shadow-sm"
+            onMouseEnter={() => setShowPad(true)}
+            onMouseLeave={() => setShowPad(false)}
+          >
             <div className="grid grid-cols-[repeat(3,1.25rem)] gap-px">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                 <button
@@ -540,7 +537,7 @@ function RxPicker({
               </button>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
