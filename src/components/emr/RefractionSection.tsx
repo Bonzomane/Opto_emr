@@ -86,86 +86,59 @@ function NumpadPopup({
     onChange('');
   };
 
+  // Button style for consistency
+  const btnClass = "w-8 h-8 text-sm font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200 flex items-center justify-center";
+  const btnSmClass = "w-10 h-8 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200 flex items-center justify-center";
+
   return (
     <div 
-      className="absolute left-0 top-full z-50 mt-1 rounded-md border border-border bg-white p-2"
+      className="absolute left-0 top-full z-50 rounded-md border border-border bg-white p-2"
       style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
     >
+      {/* Grid layout: 4 rows x N columns */}
       <div className="flex gap-1">
-        {/* Main 3x3 numpad */}
-        <div className="grid grid-cols-3 gap-px">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-            <button
-              key={num}
-              type="button"
-              onMouseDown={(e) => { e.preventDefault(); appendDigit(String(num)); }}
-              className="w-7 h-7 text-sm font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
-            >
-              {num}
-            </button>
-          ))}
-        </div>
-
-        {/* Control column: backspace, 0, clear */}
-        <div className="grid grid-rows-3 gap-px">
-          <button
-            type="button"
-            onMouseDown={(e) => { e.preventDefault(); backspace(); }}
-            className="w-7 h-7 text-sm font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
-          >
-            &lt;
-          </button>
-          <button
-            type="button"
-            onMouseDown={(e) => { e.preventDefault(); appendDigit('0'); }}
-            className="w-7 h-7 text-sm font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
-          >
-            0
-          </button>
-          <button
-            type="button"
-            onMouseDown={(e) => { e.preventDefault(); clear(); }}
-            className="w-7 h-7 text-sm font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
-          >
-            C
-          </button>
+        {/* Column 1-3: Numbers 1-9, then 0/</C */}
+        <div className="flex flex-col gap-px">
+          <div className="flex gap-px">
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('1'); }} className={btnClass}>1</button>
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('2'); }} className={btnClass}>2</button>
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('3'); }} className={btnClass}>3</button>
+          </div>
+          <div className="flex gap-px">
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('4'); }} className={btnClass}>4</button>
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('5'); }} className={btnClass}>5</button>
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('6'); }} className={btnClass}>6</button>
+          </div>
+          <div className="flex gap-px">
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('7'); }} className={btnClass}>7</button>
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('8'); }} className={btnClass}>8</button>
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('9'); }} className={btnClass}>9</button>
+          </div>
+          <div className="flex gap-px">
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('0'); }} className={btnClass}>0</button>
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); backspace(); }} className={btnClass}>&lt;</button>
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); clear(); }} className={btnClass}>C</button>
+          </div>
         </div>
 
         {/* Decimal column for power fields */}
         {fieldType === 'power' && (
-          <div className="grid grid-rows-3 gap-px">
-            <button
-              type="button"
-              onMouseDown={(e) => { e.preventDefault(); appendDecimal('.25'); }}
-              className="w-9 h-7 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
-            >
-              .25
-            </button>
-            <button
-              type="button"
-              onMouseDown={(e) => { e.preventDefault(); appendDecimal('.50'); }}
-              className="w-9 h-7 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
-            >
-              .50
-            </button>
-            <button
-              type="button"
-              onMouseDown={(e) => { e.preventDefault(); appendDecimal('.75'); }}
-              className="w-9 h-7 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
-            >
-              .75
-            </button>
+          <div className="flex flex-col gap-px">
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.25'); }} className={btnSmClass}>.25</button>
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.50'); }} className={btnSmClass}>.50</button>
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.75'); }} className={btnSmClass}>.75</button>
+            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.00'); }} className={btnSmClass}>.00</button>
           </div>
         )}
 
         {/* Sign toggle for power fields */}
         {fieldType === 'power' && onSignToggle && (
-          <div className="grid grid-rows-3 gap-px">
+          <div className="flex flex-col gap-px">
             <button
               type="button"
               onMouseDown={(e) => { e.preventDefault(); onSignToggle(); }}
               className={cn(
-                "w-7 h-7 text-sm font-bold rounded border",
+                "w-8 h-8 text-sm font-bold rounded border flex items-center justify-center",
                 sign === '-' ? 'bg-zinc-800 text-white border-zinc-800' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
               )}
             >
@@ -175,18 +148,11 @@ function NumpadPopup({
               type="button"
               onMouseDown={(e) => { e.preventDefault(); onSignToggle(); }}
               className={cn(
-                "w-7 h-7 text-sm font-bold rounded border",
+                "w-8 h-8 text-sm font-bold rounded border flex items-center justify-center",
                 sign === '+' ? 'bg-zinc-800 text-white border-zinc-800' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
               )}
             >
               +
-            </button>
-            <button
-              type="button"
-              onMouseDown={(e) => { e.preventDefault(); appendDecimal('.00'); }}
-              className="w-7 h-7 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
-            >
-              .00
             </button>
           </div>
         )}
