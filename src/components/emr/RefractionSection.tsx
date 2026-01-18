@@ -292,11 +292,46 @@ function RxPicker({
   };
 
   const applyPowerDigits = (current: string, sign: SignValue, digit: string) => {
+    // Simple digit building for numpad - don't use autocomplete
     const digits = current.replace(/\D/g, '');
     const nextDigits = appendDigits(digits, digit, MAX_POWER_DIGITS);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:applyPowerDigits:internal',message:'applyPowerDigits internal',data:{current,digits,digit,nextDigits,maxDigits:MAX_POWER_DIGITS},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C2'})}).catch(()=>{});
+    // #endregion
     if (!nextDigits) return '';
-    const result = autocompletePower(`${sign}${nextDigits}`);
-    return result;
+    // Format as power: up to 2 integer digits, then 2 decimal digits
+    // e.g., "1" -> "1", "12" -> "1.25", "125" -> "1.25", "1025" -> "10.25"
+    const len = nextDigits.length;
+    if (len <= 1) {
+      return `${sign}${nextDigits}`;
+    } else if (len === 2) {
+      // Could be "10" (integer) or "12" -> "1.25"
+      const second = nextDigits[1];
+      if (DECIMAL_AUTOCOMPLETE[second]) {
+        return `${sign}${nextDigits[0]}.${DECIMAL_AUTOCOMPLETE[second]}`;
+      }
+      return `${sign}${nextDigits}`;
+    } else if (len === 3) {
+      // "125" -> "1.25", "100" -> "1.00"
+      const dec = nextDigits.slice(1);
+      if (VALID_DECIMALS.includes(dec)) {
+        return `${sign}${nextDigits[0]}.${dec}`;
+      }
+      // Try autocomplete on second digit
+      const secondDec = DECIMAL_AUTOCOMPLETE[nextDigits[1]];
+      if (secondDec) {
+        return `${sign}${nextDigits[0]}.${secondDec}`;
+      }
+      return `${sign}${nextDigits[0]}.${dec}`;
+    } else {
+      // 4 digits: "1025" -> "10.25"
+      const int = nextDigits.slice(0, 2);
+      const dec = nextDigits.slice(2);
+      if (VALID_DECIMALS.includes(dec)) {
+        return `${sign}${int}.${dec}`;
+      }
+      return `${sign}${int}.${dec}`;
+    }
   };
 
   const backspacePowerDigits = (current: string, sign: SignValue) => {
@@ -552,8 +587,8 @@ function RxPicker({
 
         {activeField && (
           <div 
-            className="absolute left-0 top-full mt-1 z-50 rounded-md border border-border bg-white p-2"
-            style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+            className="absolute left-0 top-full z-50 rounded-md border border-border bg-white p-2"
+            style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)', marginTop: '-1px' }}
             onMouseEnter={() => { 
               // #region agent log
               fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:numpad:mouseEnter',message:'numpad mouseEnter',data:{isLocked,activeField},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A2'})}).catch(()=>{});
