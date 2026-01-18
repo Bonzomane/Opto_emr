@@ -497,8 +497,11 @@ function RxPicker({
         </div>
 
         {activeField && (
-          <div className="mt-2 inline-block rounded-md border border-border bg-white p-2 shadow-lg">
-            <div className="text-[10px] text-muted-foreground mb-1 text-center uppercase">
+          <div 
+            className="absolute left-0 top-full mt-1 z-50 rounded-md border border-border bg-white p-2"
+            style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+          >
+            <div className="text-[10px] text-muted-foreground mb-1 text-center uppercase font-medium">
               {activeField === 'sphere' ? 'Sphère' : activeField === 'cylinder' ? 'Cylindre' : activeField === 'axis' ? 'Axe' : activeField === 'add' ? 'Addition' : activeField === 'vertex' ? 'Vertex' : 'Prisme'}
             </div>
             <div className="flex gap-px">
@@ -507,33 +510,33 @@ function RxPicker({
                   <button
                     key={num}
                     type="button"
-                    onClick={() => appendDigit(num)}
-                    className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+                    onMouseDown={(e) => { e.preventDefault(); appendDigit(num); }}
+                    className="w-6 h-6 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
                   >
                     {num}
                   </button>
                 ))}
               </div>
-              <div className="grid grid-rows-3 gap-px">
+              <div className="grid grid-rows-3 gap-px ml-px">
                 <button
                   type="button"
-                  onClick={backspaceActive}
-                  className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+                  onMouseDown={(e) => { e.preventDefault(); backspaceActive(); }}
+                  className="w-6 h-6 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
                   aria-label="Retour"
                 >
                   &lt;
                 </button>
                 <button
                   type="button"
-                  onClick={() => appendDigit(0)}
-                  className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+                  onMouseDown={(e) => { e.preventDefault(); appendDigit(0); }}
+                  className="w-6 h-6 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
                 >
                   0
                 </button>
                 <button
                   type="button"
-                  onClick={clearActive}
-                  className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+                  onMouseDown={(e) => { e.preventDefault(); clearActive(); }}
+                  className="w-6 h-6 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200"
                 >
                   C
                 </button>
