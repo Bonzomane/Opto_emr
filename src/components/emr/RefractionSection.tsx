@@ -91,8 +91,11 @@ function NumpadPopup({
   const btnSmClass = "w-10 h-8 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200 flex items-center justify-center";
 
   return (
-    <div className="absolute left-0 top-full z-50 pt-2">
-      {/* Invisible bridge area for Amazon-style hover */}
+    <div 
+      className="absolute left-0 top-full z-50 p-3 -m-3 mt-0"
+      style={{ pointerEvents: 'auto' }}
+    >
+      {/* Visible numpad */}
       <div 
         className="rounded-md border border-border bg-white p-2"
         style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
