@@ -5,6 +5,7 @@ import { DropdownButton, DropdownOption } from './DropdownButton';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
 import { SectionHeader } from './SectionHeader';
+import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 
 interface RefractionSectionProps {
@@ -96,206 +97,6 @@ function extractPower(digits: string): { power: string; remaining: string } {
   return { power: digits, remaining: '' };
 }
 
-/**
- * Parse packed digit input into formatted Rx string.
- * Examples:
- *   "125" → "-1.25"
- *   "1025" → "-10.25"
- *   "100" → "-1.00"
- *   "1000" → "-10.00"
- *   "1001" → "-1.00 -1" (incomplete cyl)
- *   "500100180" → "-5.00 -1.00 x 180"
- */
-function formatPackedRx(digits: string, sphSign: SignValue): string {
-  const cleaned = digits.replace(/\D/g, '');
-  if (!cleaned) return '';
-
-  // Cylinder is always negative in minus cylinder notation
-  const cylSign: SignValue = '-';
-
-  // Extract sphere (no limit)
-  const { power: sph, remaining: afterSph } = extractPower(cleaned);
-  if (!afterSph) {
-    return sph ? `${sphSign}${sph}` : '';
-  }
-
-  // Cylinder: max 3 digits (so max is 9.75)
-  // Take only first 3 digits for cylinder, rest goes to axis
-  const cylDigits = afterSph.slice(0, 3);
-  const { power: cyl, remaining: cylRemainder } = extractPower(cylDigits);
-  
-  // Axis = any unused cylinder digits + everything after first 3
-  const axis = cylRemainder + afterSph.slice(3);
-
-  if (sph && cyl && axis) {
-    return `${sphSign}${sph} / ${cylSign}${cyl} x ${axis}`;
-  }
-  if (sph && cyl) {
-    return `${sphSign}${sph} / ${cylSign}${cyl}`;
-  }
-  if (sph && afterSph) {
-    // Incomplete cylinder (e.g., "1001" → "-1.00 / -1")
-    return `${sphSign}${sph} / ${cylSign}${afterSph}`;
-  }
-  return sph ? `${sphSign}${sph}` : '';
-}
-
-/**
- * Parse packed digit input for addition (same logic but simpler - just one power).
- */
-function formatPackedAdd(digits: string, sign: SignValue): string {
-  const cleaned = digits.replace(/\D/g, '');
-  if (!cleaned) return '';
-  
-  const { power } = extractPower(cleaned);
-  return power ? `${sign}${power}` : '';
-}
-
-// Individual input box with keyboard activation on click and hover
-function RefractionInput({
-  value,
-  onChange,
-  placeholder,
-  className = '',
-  type = 'power', // 'power' for sphere/cylinder, 'axis' for axis
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  className?: string;
-  type?: 'power' | 'axis';
-}) {
-  const [inputRef, setInputRef] = useState<HTMLInputElement | null>(null);
-  const [lastValue, setLastValue] = useState(value);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target.value;
-    const digits = input.replace(/[^0-9+-]/g, '');
-
-    // Check if this is a deletion (backspace/delete)
-    const isDeletion = input.length < lastValue.length;
-    setLastValue(input);
-
-    if (type === 'power') {
-      // Real-time autocomplete for power values
-      const sign = input.startsWith('-') ? '-' : input.startsWith('+') ? '+' : '';
-      const justDigits = digits.replace(/[+-]/g, '');
-
-      if (!justDigits) {
-        onChange(sign);
-        return;
-      }
-
-      // If deleting, just show what's there without autocomplete
-      if (isDeletion) {
-        onChange(input);
-        return;
-      }
-
-      const len = justDigits.length;
-
-      if (len === 1) {
-        // "1" -> "1.00"
-        onChange(`${sign}${justDigits}.00`);
-      } else if (len === 2) {
-        // "12" -> "1.25", "10" -> "1.00", "50" -> "5.00"
-        const firstDigit = justDigits[0];
-        const secondDigit = justDigits[1];
-
-        // Check if second digit completes a decimal (0, 2, 5, 7)
-        if (DECIMAL_AUTOCOMPLETE[secondDigit]) {
-          const decimal = DECIMAL_AUTOCOMPLETE[secondDigit];
-          onChange(`${sign}${firstDigit}.${decimal}`);
-        } else {
-          // Not a valid decimal starter, treat as two-digit integer
-          onChange(`${sign}${justDigits}.00`);
-        }
-      } else if (len === 3) {
-        // "125" -> "1.25", "100" -> "1.00", "500" -> "5.00"
-        const int = justDigits[0];
-        const dec = justDigits.slice(1);
-        if (VALID_DECIMALS.includes(dec)) {
-          onChange(`${sign}${int}.${dec}`);
-        } else {
-          // Try autocomplete on second digit
-          const decimal = DECIMAL_AUTOCOMPLETE[justDigits[1]] || dec;
-          onChange(`${sign}${int}.${decimal}`);
-        }
-      } else if (len === 4) {
-        // "1000" -> "10.00", "1200" -> "12.00", "1025" -> "10.25"
-        const int = justDigits.slice(0, 2);
-        const dec = justDigits.slice(2);
-        if (VALID_DECIMALS.includes(dec)) {
-          onChange(`${sign}${int}.${dec}`);
-        } else {
-          // Try autocomplete on third digit
-          const decimal = DECIMAL_AUTOCOMPLETE[justDigits[2]] || dec;
-          onChange(`${sign}${int}.${decimal}`);
-        }
-      } else {
-        // More than 4 digits - use extractPower logic
-        const { power } = extractPower(justDigits);
-        onChange(`${sign}${power}`);
-      }
-    } else if (type === 'axis') {
-      // Real-time autocomplete for axis values
-      if (!digits) {
-        onChange('');
-        return;
-      }
-
-      // If deleting, just show what's there without autocomplete
-      if (isDeletion) {
-        onChange(input);
-        return;
-      }
-
-      const len = digits.length;
-      const num = parseInt(digits, 10);
-
-      if (len === 1) {
-        // "1" -> "180", "9" -> "90"
-        if (num === 1) {
-          onChange('180');
-        } else if (num === 9) {
-          onChange('90');
-        } else if (num === 0) {
-          onChange('0');
-        } else {
-          onChange(digits);
-        }
-      } else if (len === 2) {
-        // "18" -> "180", "90" -> "90"
-        if (num === 18) {
-          onChange('180');
-        } else if (num === 90) {
-          onChange('90');
-        } else {
-          onChange(Math.min(180, num).toString());
-        }
-      } else if (len === 3) {
-        // "180" is complete
-        onChange(Math.min(180, num).toString());
-      } else {
-        onChange(Math.min(180, num).toString());
-      }
-    }
-  };
-
-  return (
-    <input
-      ref={setInputRef}
-      type="text"
-      value={value}
-      onChange={handleChange}
-      onClick={() => inputRef?.focus()}
-      onMouseEnter={() => inputRef?.focus()}
-      placeholder={placeholder}
-      className={`h-9 w-16 px-2 text-center text-sm font-mono border border-border rounded bg-background focus:outline-none focus:ring-2 focus:ring-primary ${className}`}
-    />
-  );
-}
-
 // Parse a prescription string like "-1.25 / -0.50 x 180" into parts
 function parseRx(rx: string): { sphere: string; cylinder: string; axis: string } {
   const parts = rx.split(/[\/x]/).map(p => p.trim());
@@ -379,24 +180,50 @@ function autocompleteAxis(input: string): string {
   return Math.min(180, num).toString();
 }
 
-// Full Rx input for one eye with separate boxes
+type RxField = 'sphere' | 'cylinder' | 'axis' | 'add' | 'vertex' | 'prism';
+
+const MAX_POWER_DIGITS = 4;
+const MAX_AXIS_DIGITS = 3;
+const MAX_OPTION_DIGITS = 3;
+
+function appendDigits(current: string, digit: string, max: number) {
+  if (current.length >= max) return current;
+  return `${current}${digit}`;
+}
+
+function backspaceDigits(current: string) {
+  if (!current) return '';
+  return current.slice(0, -1);
+}
+
+// Full Rx input for one eye with numpad
 function RxPicker({
   label,
   value,
   add,
+  vertex,
+  prism,
   onChange,
   onAddChange,
+  onVertexChange,
+  onPrismChange,
 }: {
   label: string;
   value: string;
   add: string;
+  vertex: string;
+  prism: string;
   onChange: (v: string) => void;
   onAddChange: (v: string) => void;
+  onVertexChange: (v: string) => void;
+  onPrismChange: (v: string) => void;
 }) {
-  const [rxSign, setRxSign] = useState<SignValue>(() => inferSign(value, '-'));
-  const [addSign, setAddSign] = useState<SignValue>(() => inferSign(add, '+'));
-
   const parsed = parseRx(value);
+  const [rxSign, setRxSign] = useState<SignValue>(() => inferSign(value, '-'));
+  const [cylSign, setCylSign] = useState<SignValue>(() => inferSign(parsed.cylinder, '-'));
+  const [addSign, setAddSign] = useState<SignValue>(() => inferSign(add, '+'));
+  const [activeField, setActiveField] = useState<RxField>('sphere');
+  const [showExtras, setShowExtras] = useState(false);
   const [sphere, setSphere] = useState(parsed.sphere);
   const [cylinder, setCylinder] = useState(parsed.cylinder);
   const [axis, setAxis] = useState(parsed.axis);
@@ -407,11 +234,18 @@ function RxPicker({
     setCylinder(parsed.cylinder);
     setAxis(parsed.axis);
     setRxSign((current) => inferSign(value, current));
+    setCylSign((current) => inferSign(parsed.cylinder, current));
   }, [value]);
 
   useEffect(() => {
     setAddSign((current) => inferSign(add, current));
   }, [add]);
+
+  useEffect(() => {
+    if (!showExtras && (activeField === 'vertex' || activeField === 'prism')) {
+      setActiveField('sphere');
+    }
+  }, [showExtras, activeField]);
 
   const updateRx = (newSphere: string, newCylinder: string, newAxis: string) => {
     setSphere(newSphere);
@@ -420,81 +254,280 @@ function RxPicker({
     onChange(combineRx(newSphere, newCylinder, newAxis));
   };
 
+  const applyPowerDigits = (current: string, sign: SignValue, digit: string) => {
+    const digits = current.replace(/\D/g, '');
+    const nextDigits = appendDigits(digits, digit, MAX_POWER_DIGITS);
+    return nextDigits ? autocompletePower(`${sign}${nextDigits}`) : '';
+  };
+
+  const backspacePowerDigits = (current: string, sign: SignValue) => {
+    const digits = current.replace(/\D/g, '');
+    const nextDigits = backspaceDigits(digits);
+    return nextDigits ? autocompletePower(`${sign}${nextDigits}`) : '';
+  };
+
+  const applyAxisDigits = (current: string, digit: string) => {
+    const digits = current.replace(/\D/g, '');
+    const nextDigits = appendDigits(digits, digit, MAX_AXIS_DIGITS);
+    return nextDigits ? autocompleteAxis(nextDigits) : '';
+  };
+
+  const backspaceAxisDigits = (current: string) => {
+    const digits = current.replace(/\D/g, '');
+    const nextDigits = backspaceDigits(digits);
+    return nextDigits ? autocompleteAxis(nextDigits) : '';
+  };
+
+  const applyOptionDigits = (current: string, digit: string) => {
+    const digits = current.replace(/\D/g, '');
+    const nextDigits = appendDigits(digits, digit, MAX_OPTION_DIGITS);
+    return nextDigits || '';
+  };
+
+  const backspaceOptionDigits = (current: string) => {
+    const digits = current.replace(/\D/g, '');
+    return backspaceDigits(digits);
+  };
+
+  const toggleSign = (field: 'sphere' | 'cylinder' | 'add') => {
+    if (field === 'sphere') {
+      const next = rxSign === '-' ? '+' : '-';
+      setRxSign(next);
+      if (sphere) {
+        const digits = sphere.replace(/\D/g, '');
+        updateRx(autocompletePower(`${next}${digits}`), cylinder, axis);
+      }
+      return;
+    }
+    if (field === 'cylinder') {
+      const next = cylSign === '-' ? '+' : '-';
+      setCylSign(next);
+      if (cylinder) {
+        const digits = cylinder.replace(/\D/g, '');
+        updateRx(sphere, autocompletePower(`${next}${digits}`), axis);
+      }
+      return;
+    }
+    const next = addSign === '-' ? '+' : '-';
+    setAddSign(next);
+    if (add) {
+      const digits = add.replace(/\D/g, '');
+      onAddChange(autocompletePower(`${next}${digits}`));
+    }
+  };
+
+  const appendDigit = (digit: number) => {
+    const nextDigit = String(digit);
+    switch (activeField) {
+      case 'sphere':
+        updateRx(applyPowerDigits(sphere, rxSign, nextDigit), cylinder, axis);
+        break;
+      case 'cylinder':
+        updateRx(sphere, applyPowerDigits(cylinder, cylSign, nextDigit), axis);
+        break;
+      case 'axis':
+        updateRx(sphere, cylinder, applyAxisDigits(axis, nextDigit));
+        break;
+      case 'add':
+        onAddChange(applyPowerDigits(add, addSign, nextDigit));
+        break;
+      case 'vertex':
+        onVertexChange(applyOptionDigits(vertex, nextDigit));
+        break;
+      case 'prism':
+        onPrismChange(applyOptionDigits(prism, nextDigit));
+        break;
+    }
+  };
+
+  const backspaceActive = () => {
+    switch (activeField) {
+      case 'sphere':
+        updateRx(backspacePowerDigits(sphere, rxSign), cylinder, axis);
+        break;
+      case 'cylinder':
+        updateRx(sphere, backspacePowerDigits(cylinder, cylSign), axis);
+        break;
+      case 'axis':
+        updateRx(sphere, cylinder, backspaceAxisDigits(axis));
+        break;
+      case 'add':
+        onAddChange(backspacePowerDigits(add, addSign));
+        break;
+      case 'vertex':
+        onVertexChange(backspaceOptionDigits(vertex));
+        break;
+      case 'prism':
+        onPrismChange(backspaceOptionDigits(prism));
+        break;
+    }
+  };
+
+  const clearActive = () => {
+    switch (activeField) {
+      case 'sphere':
+        updateRx('', cylinder, axis);
+        break;
+      case 'cylinder':
+        updateRx(sphere, '', axis);
+        break;
+      case 'axis':
+        updateRx(sphere, cylinder, '');
+        break;
+      case 'add':
+        onAddChange('');
+        break;
+      case 'vertex':
+        onVertexChange('');
+        break;
+      case 'prism':
+        onPrismChange('');
+        break;
+    }
+  };
+
+  const fieldButtonClass = (field: RxField) =>
+    cn(
+      'h-8 min-w-[60px] rounded border px-2 text-sm font-mono',
+      activeField === field
+        ? 'border-primary ring-1 ring-primary bg-primary/5'
+        : 'border-border bg-background'
+    );
+
   return (
     <div className="space-y-2">
       <span className="text-sm font-bold">{label}</span>
 
-      <div className="grid gap-2 md:grid-cols-[1fr_140px]">
-        <div className="flex gap-0.5 items-center">
+      <div className="relative group">
+        <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/20 px-2 py-2">
           <button
             type="button"
-            onClick={() => {
-              const next = rxSign === '-' ? '+' : '-';
-              setRxSign(next);
-              if (sphere) {
-                const newSphere = sphere.startsWith('-') || sphere.startsWith('+')
-                  ? next + sphere.slice(1)
-                  : next + sphere;
-                updateRx(newSphere, cylinder, axis);
-              }
-            }}
-            className="h-9 w-10 rounded border border-border bg-muted/40 text-sm font-mono hover:bg-muted mr-1"
+            onClick={() => toggleSign('sphere')}
+            className="h-7 w-8 rounded border border-border bg-white text-sm font-mono hover:bg-muted"
           >
             {rxSign}
           </button>
-          <RefractionInput
-            value={sphere}
-            onChange={(v) => updateRx(v, cylinder, axis)}
-            placeholder="0.00"
-            type="power"
-          />
-          <span className="text-sm font-mono text-muted-foreground px-1">/</span>
-          <RefractionInput
-            value={cylinder}
-            onChange={(v) => updateRx(sphere, v, axis)}
-            placeholder="0.00"
-            type="power"
-          />
-          <span className="text-sm font-mono text-muted-foreground px-1">x</span>
-          <RefractionInput
-            value={axis}
-            onChange={(v) => updateRx(sphere, cylinder, v)}
-            placeholder="180"
-            type="axis"
-          />
-        </div>
-        <div className="flex gap-2 items-center">
           <button
             type="button"
-            onClick={() => {
-              const next = addSign === '-' ? '+' : '-';
-              setAddSign(next);
-              if (add) {
-                const newAdd = add.startsWith('-') || add.startsWith('+')
-                  ? next + add.slice(1)
-                  : next + add;
-                onAddChange(newAdd);
-              }
-            }}
-            className="h-9 w-10 rounded border border-border bg-muted/40 text-sm font-mono hover:bg-muted"
+            onClick={() => setActiveField('sphere')}
+            className={fieldButtonClass('sphere')}
+          >
+            {sphere || '0.00'}
+          </button>
+
+          <span className="text-xs text-muted-foreground">/</span>
+
+          <button
+            type="button"
+            onClick={() => toggleSign('cylinder')}
+            className="h-7 w-8 rounded border border-border bg-white text-sm font-mono hover:bg-muted"
+          >
+            {cylSign}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveField('cylinder')}
+            className={fieldButtonClass('cylinder')}
+          >
+            {cylinder || '0.00'}
+          </button>
+
+          <span className="text-xs text-muted-foreground">x</span>
+
+          <button
+            type="button"
+            onClick={() => setActiveField('axis')}
+            className={fieldButtonClass('axis')}
+          >
+            {axis || '180'}
+          </button>
+
+          <span className="text-xs text-muted-foreground">ADD</span>
+          <button
+            type="button"
+            onClick={() => toggleSign('add')}
+            className="h-7 w-8 rounded border border-border bg-white text-sm font-mono hover:bg-muted"
           >
             {addSign}
           </button>
-          <Input
-            type="text"
-            value={add}
-            onChange={(e) => {
-              onAddChange(e.target.value);
-            }}
-            onFocus={(e) => {
-              if (add) {
-                const completed = autocompletePower(add);
-                onAddChange(completed);
-              }
-            }}
-            placeholder="Add"
-            className="h-9 text-sm font-mono"
-          />
+          <button
+            type="button"
+            onClick={() => setActiveField('add')}
+            className={fieldButtonClass('add')}
+          >
+            {add || '0.00'}
+          </button>
+
+          {showExtras && (
+            <>
+              <span className="text-xs text-muted-foreground">VTX</span>
+              <button
+                type="button"
+                onClick={() => setActiveField('vertex')}
+                className={fieldButtonClass('vertex')}
+              >
+                {vertex || '--'}
+              </button>
+
+              <span className="text-xs text-muted-foreground">PR</span>
+              <button
+                type="button"
+                onClick={() => setActiveField('prism')}
+                className={fieldButtonClass('prism')}
+              >
+                {prism || '--'}
+              </button>
+            </>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setShowExtras((prev) => !prev)}
+            className="ml-auto h-7 rounded border border-border bg-white px-2 text-xs text-muted-foreground hover:bg-muted"
+          >
+            {showExtras ? 'Options -' : 'Options +'}
+          </button>
+        </div>
+
+        <div className="absolute right-0 top-0 z-10 translate-x-[calc(100%+8px)] opacity-0 pointer-events-none transition-opacity duration-150 group-hover:opacity-100 group-hover:pointer-events-auto">
+          <div className="rounded-md border border-border bg-white p-2 shadow-sm">
+            <div className="grid grid-cols-[repeat(3,1.25rem)] gap-px">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                <button
+                  key={num}
+                  type="button"
+                  onClick={() => appendDigit(num)}
+                  className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
+            <div className="mt-1 grid grid-rows-3 gap-px">
+              <button
+                type="button"
+                onClick={backspaceActive}
+                className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+                aria-label="Retour"
+              >
+                &lt;
+              </button>
+              <button
+                type="button"
+                onClick={() => appendDigit(0)}
+                className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+              >
+                0
+              </button>
+              <button
+                type="button"
+                onClick={clearActive}
+                className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+              >
+                C
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -519,15 +552,23 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
             label="OD"
             value={refraction.rxOD}
             add={refraction.addOD}
+            vertex={refraction.vertexOD}
+            prism={refraction.prismOD}
             onChange={(v) => onChange({ rxOD: v })}
             onAddChange={(v) => onChange({ addOD: v })}
+            onVertexChange={(v) => onChange({ vertexOD: v })}
+            onPrismChange={(v) => onChange({ prismOD: v })}
           />
           <RxPicker
             label="OS"
             value={refraction.rxOS}
             add={refraction.addOS}
+            vertex={refraction.vertexOS}
+            prism={refraction.prismOS}
             onChange={(v) => onChange({ rxOS: v })}
             onAddChange={(v) => onChange({ addOS: v })}
+            onVertexChange={(v) => onChange({ vertexOS: v })}
+            onPrismChange={(v) => onChange({ prismOS: v })}
           />
         </div>
       </div>

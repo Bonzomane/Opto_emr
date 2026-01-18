@@ -137,6 +137,10 @@ export interface RefractionData {
   rxOS: string;
   addOD: string;
   addOS: string;
+  vertexOD: string;
+  vertexOS: string;
+  prismOD: string;
+  prismOS: string;
   
   // AV avec Rx finale
   avOD: string;
@@ -619,6 +623,10 @@ export function createEmptyPatientSession(): PatientSession {
       rxOS: '',
       addOD: '',
       addOS: '',
+      vertexOD: '',
+      vertexOS: '',
+      prismOD: '',
+      prismOS: '',
       avOD: '',
       avOS: '',
       avOU: '',
