@@ -230,6 +230,9 @@ function RxPicker({
   const [axis, setAxis] = useState(parsed.axis);
 
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:useEffect[value]',message:'useEffect syncing from props',data:{propValue:value,parsedSphere:parseRx(value).sphere},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
     const parsed = parseRx(value);
     setSphere(parsed.sphere);
     setCylinder(parsed.cylinder);
@@ -267,12 +270,18 @@ function RxPicker({
   };
 
   const handleFieldLeave = () => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:handleFieldLeave',message:'handleFieldLeave called',data:{isLocked,activeField},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     if (!isLocked) {
       setActiveField(null);
     }
   };
 
   const updateRx = (newSphere: string, newCylinder: string, newAxis: string) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:updateRx',message:'updateRx called',data:{newSphere,newCylinder,newAxis,combined:combineRx(newSphere,newCylinder,newAxis)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
     setSphere(newSphere);
     setCylinder(newCylinder);
     setAxis(newAxis);
@@ -344,11 +353,18 @@ function RxPicker({
   };
 
   const appendDigit = (digit: number) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:appendDigit',message:'appendDigit called',data:{digit,activeField,sphere,cylinder,axis},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     if (!activeField) return;
     const nextDigit = String(digit);
     switch (activeField) {
       case 'sphere':
-        updateRx(applyPowerDigits(sphere, rxSign, nextDigit), cylinder, axis);
+        // #region agent log
+        const newSphereValue = applyPowerDigits(sphere, rxSign, nextDigit);
+        fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:appendDigit:sphere',message:'sphere applyPowerDigits result',data:{currentSphere:sphere,rxSign,nextDigit,newSphereValue},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
+        updateRx(newSphereValue, cylinder, axis);
         break;
       case 'cylinder':
         updateRx(sphere, applyPowerDigits(cylinder, cylSign, nextDigit), axis);
