@@ -44,59 +44,6 @@ function inferSign(value: string, fallback: SignValue): SignValue {
   return fallback;
 }
 
-// Map of which digit completes a partial decimal (e.g., "2" needs "5" to become "25")
-const DECIMAL_COMPLETERS: Record<string, string> = {
-  '0': '0', '2': '5', '5': '0', '7': '5'
-};
-
-/**
- * Extract the first power value from a digit string.
- * Recognizes .00, .25, .50, .75 as valid decimal endings.
- * Auto-completes partial decimals (0→00, 2→25, 5→50, 7→75) only when
- * followed by a digit that can't complete the pattern.
- * Returns { power, remaining } where power is formatted (e.g. "1.25") and remaining is leftover digits.
- */
-function extractPower(digits: string): { power: string; remaining: string } {
-  if (!digits) return { power: '', remaining: '' };
-
-  // Scan for valid decimal endings (00, 25, 50, 75)
-  for (let i = 2; i <= digits.length; i++) {
-    const decimal = digits.slice(i - 2, i);
-    if (VALID_DECIMALS.includes(decimal)) {
-      const integer = digits.slice(0, i - 2) || '0';
-      const intValue = parseInt(integer, 10);
-      const nextChar = digits[i];
-
-      // If next char is '0', it might extend the integer (e.g., 1000 = 10.00)
-      // If next char is non-zero or undefined, we found a boundary
-      if (nextChar === undefined || nextChar !== '0') {
-        return { power: `${intValue}.${decimal}`, remaining: digits.slice(i) };
-      }
-    }
-  }
-
-  // No complete decimal found - check for partial decimal with following digit
-  // Only auto-complete if the NEXT digit proves the partial is done
-  for (let i = 1; i < digits.length; i++) {
-    const partialDigit = digits[i - 1];
-    const nextDigit = digits[i];
-    
-    if (DECIMAL_AUTOCOMPLETE[partialDigit]) {
-      const completer = DECIMAL_COMPLETERS[partialDigit];
-      // If next digit is NOT the completer, auto-complete here
-      if (nextDigit !== completer) {
-        const decimal = DECIMAL_AUTOCOMPLETE[partialDigit];
-        const integer = digits.slice(0, i - 1) || '0';
-        const intValue = parseInt(integer, 10);
-        return { power: `${intValue}.${decimal}`, remaining: digits.slice(i) };
-      }
-    }
-  }
-
-  // No valid decimal found - return digits as incomplete integer
-  return { power: digits, remaining: '' };
-}
-
 // Parse a prescription string like "-1.25 / -0.50 x 180" into parts
 function parseRx(rx: string): { sphere: string; cylinder: string; axis: string } {
   const parts = rx.split(/[\/x]/).map(p => p.trim());
@@ -119,67 +66,40 @@ function combineRx(sphere: string, cylinder: string, axis: string): string {
   return result;
 }
 
-// Auto-complete for sphere and cylinder (e.g., "1" -> "1.00", "125" -> "1.25")
-function autocompletePower(input: string): string {
-  const cleaned = input.replace(/[^\d.+-]/g, '');
-  if (!cleaned) return '';
-
-  // Extract sign
-  const sign = cleaned.startsWith('-') ? '-' : cleaned.startsWith('+') ? '+' : '';
-  const digits = cleaned.replace(/[^0-9]/g, '');
-
-  if (!digits) return sign;
-
-  // Parse based on length
-  if (digits.length === 1) {
-    // Single digit: "1" -> "1.00"
+function formatPowerFromDigits(digits: string, sign: SignValue): string {
+  if (!digits) return '';
+  const len = digits.length;
+  if (len === 1) {
     return `${sign}${digits}.00`;
-  } else if (digits.length === 2) {
-    // Two digits: "10" -> "10.00", "12" -> "1.25"
-    if (digits[1] === '0') {
-      return `${sign}${digits}.00`;
+  }
+  if (len === 2) {
+    const second = digits[1];
+    if (DECIMAL_AUTOCOMPLETE[second]) {
+      return `${sign}${digits[0]}.${DECIMAL_AUTOCOMPLETE[second]}`;
     }
-    const decimal = DECIMAL_AUTOCOMPLETE[digits[1]] || digits[1] + '0';
-    return `${sign}${digits[0]}.${decimal}`;
-  } else if (digits.length === 3) {
-    // Three digits: "125" -> "1.25", "100" -> "1.00"
-    const int = digits[0];
+    return `${sign}${digits}.00`;
+  }
+  if (len === 3) {
     const dec = digits.slice(1);
     if (VALID_DECIMALS.includes(dec)) {
-      return `${sign}${int}.${dec}`;
+      return `${sign}${digits[0]}.${dec}`;
     }
-    // Try to autocomplete: "127" -> "1.25" (ignore the 7)
-    const firstDec = digits[1];
-    const completedDec = DECIMAL_AUTOCOMPLETE[firstDec] || dec;
-    return `${sign}${int}.${completedDec}`;
-  } else {
-    // Four+ digits: "1025" -> "10.25"
-    const { power } = extractPower(digits);
-    return `${sign}${power}`;
+    const secondDec = DECIMAL_AUTOCOMPLETE[digits[1]];
+    if (secondDec) {
+      return `${sign}${digits[0]}.${secondDec}`;
+    }
+    return `${sign}${digits[0]}.${dec}`;
   }
+  const int = digits.slice(0, 2);
+  const dec = digits.slice(2);
+  return `${sign}${int}.${dec}`;
 }
 
-// Auto-complete for axis (e.g., "1" -> "180", "9" -> "90")
-function autocompleteAxis(input: string): string {
-  const cleaned = input.replace(/\D/g, '');
-  if (!cleaned) return '';
-
-  const num = parseInt(cleaned, 10);
-
-  // Common axis values
-  if (cleaned.length === 1) {
-    if (num === 1) return '180';
-    if (num === 9) return '90';
-    if (num === 0) return '0';
-  } else if (cleaned.length === 2) {
-    if (num === 18) return '180';
-    if (num === 90) return '90';
-  }
-
-  // Otherwise return as-is, but clamp to 0-180
+function formatAxisFromDigits(digits: string): string {
+  if (!digits) return '';
+  const num = parseInt(digits, 10);
   return Math.min(180, num).toString();
 }
-
 type RxField = 'sphere' | 'cylinder' | 'axis' | 'add' | 'vertex' | 'prism';
 
 const MAX_POWER_DIGITS = 4;
@@ -292,64 +212,30 @@ function RxPicker({
   };
 
   const applyPowerDigits = (current: string, sign: SignValue, digit: string) => {
-    // Simple digit building for numpad - don't use autocomplete
     const digits = current.replace(/\D/g, '');
     const nextDigits = appendDigits(digits, digit, MAX_POWER_DIGITS);
     // #region agent log
     fetch('http://127.0.0.1:7242/ingest/e822b818-e18f-42e8-b5f3-ca56de2f191f',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RefractionSection.tsx:applyPowerDigits:internal',message:'applyPowerDigits internal',data:{current,digits,digit,nextDigits,maxDigits:MAX_POWER_DIGITS},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C2'})}).catch(()=>{});
     // #endregion
-    if (!nextDigits) return '';
-    // Format as power: up to 2 integer digits, then 2 decimal digits
-    // e.g., "1" -> "1", "12" -> "1.25", "125" -> "1.25", "1025" -> "10.25"
-    const len = nextDigits.length;
-    if (len <= 1) {
-      return `${sign}${nextDigits}`;
-    } else if (len === 2) {
-      // Could be "10" (integer) or "12" -> "1.25"
-      const second = nextDigits[1];
-      if (DECIMAL_AUTOCOMPLETE[second]) {
-        return `${sign}${nextDigits[0]}.${DECIMAL_AUTOCOMPLETE[second]}`;
-      }
-      return `${sign}${nextDigits}`;
-    } else if (len === 3) {
-      // "125" -> "1.25", "100" -> "1.00"
-      const dec = nextDigits.slice(1);
-      if (VALID_DECIMALS.includes(dec)) {
-        return `${sign}${nextDigits[0]}.${dec}`;
-      }
-      // Try autocomplete on second digit
-      const secondDec = DECIMAL_AUTOCOMPLETE[nextDigits[1]];
-      if (secondDec) {
-        return `${sign}${nextDigits[0]}.${secondDec}`;
-      }
-      return `${sign}${nextDigits[0]}.${dec}`;
-    } else {
-      // 4 digits: "1025" -> "10.25"
-      const int = nextDigits.slice(0, 2);
-      const dec = nextDigits.slice(2);
-      if (VALID_DECIMALS.includes(dec)) {
-        return `${sign}${int}.${dec}`;
-      }
-      return `${sign}${int}.${dec}`;
-    }
+    return formatPowerFromDigits(nextDigits, sign);
   };
 
   const backspacePowerDigits = (current: string, sign: SignValue) => {
     const digits = current.replace(/\D/g, '');
     const nextDigits = backspaceDigits(digits);
-    return nextDigits ? autocompletePower(`${sign}${nextDigits}`) : '';
+    return formatPowerFromDigits(nextDigits, sign);
   };
 
   const applyAxisDigits = (current: string, digit: string) => {
     const digits = current.replace(/\D/g, '');
     const nextDigits = appendDigits(digits, digit, MAX_AXIS_DIGITS);
-    return nextDigits ? autocompleteAxis(nextDigits) : '';
+    return formatAxisFromDigits(nextDigits);
   };
 
   const backspaceAxisDigits = (current: string) => {
     const digits = current.replace(/\D/g, '');
     const nextDigits = backspaceDigits(digits);
-    return nextDigits ? autocompleteAxis(nextDigits) : '';
+    return formatAxisFromDigits(nextDigits);
   };
 
   const applyOptionDigits = (current: string, digit: string) => {
@@ -369,7 +255,7 @@ function RxPicker({
       setRxSign(next);
       if (sphere) {
         const digits = sphere.replace(/\D/g, '');
-        updateRx(autocompletePower(`${next}${digits}`), cylinder, axis);
+        updateRx(formatPowerFromDigits(digits, next), cylinder, axis);
       }
       return;
     }
@@ -378,7 +264,7 @@ function RxPicker({
       setCylSign(next);
       if (cylinder) {
         const digits = cylinder.replace(/\D/g, '');
-        updateRx(sphere, autocompletePower(`${next}${digits}`), axis);
+        updateRx(sphere, formatPowerFromDigits(digits, next), axis);
       }
       return;
     }
@@ -386,7 +272,7 @@ function RxPicker({
     setAddSign(next);
     if (add) {
       const digits = add.replace(/\D/g, '');
-      onAddChange(autocompletePower(`${next}${digits}`));
+      onAddChange(formatPowerFromDigits(digits, next));
     }
   };
 
@@ -482,7 +368,7 @@ function RxPicker({
     <div className="space-y-2">
       <span className="text-sm font-bold">{label}</span>
 
-      <div className="relative">
+      <div className="relative" onMouseLeave={handleFieldLeave}>
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/20 px-2 py-2">
           <button
             type="button"
@@ -495,7 +381,6 @@ function RxPicker({
             type="button"
             onClick={() => handleFieldClick('sphere')}
             onMouseEnter={() => handleFieldHover('sphere')}
-            onMouseLeave={handleFieldLeave}
             className={fieldButtonClass('sphere')}
           >
             {sphere || '0.00'}
@@ -514,7 +399,6 @@ function RxPicker({
             type="button"
             onClick={() => handleFieldClick('cylinder')}
             onMouseEnter={() => handleFieldHover('cylinder')}
-            onMouseLeave={handleFieldLeave}
             className={fieldButtonClass('cylinder')}
           >
             {cylinder || '0.00'}
@@ -526,7 +410,6 @@ function RxPicker({
             type="button"
             onClick={() => handleFieldClick('axis')}
             onMouseEnter={() => handleFieldHover('axis')}
-            onMouseLeave={handleFieldLeave}
             className={fieldButtonClass('axis')}
           >
             {axis || '180'}
@@ -544,7 +427,6 @@ function RxPicker({
             type="button"
             onClick={() => handleFieldClick('add')}
             onMouseEnter={() => handleFieldHover('add')}
-            onMouseLeave={handleFieldLeave}
             className={fieldButtonClass('add')}
           >
             {add || '0.00'}
@@ -557,7 +439,6 @@ function RxPicker({
                 type="button"
                 onClick={() => handleFieldClick('vertex')}
                 onMouseEnter={() => handleFieldHover('vertex')}
-                onMouseLeave={handleFieldLeave}
                 className={fieldButtonClass('vertex')}
               >
                 {vertex || '--'}
@@ -568,7 +449,6 @@ function RxPicker({
                 type="button"
                 onClick={() => handleFieldClick('prism')}
                 onMouseEnter={() => handleFieldHover('prism')}
-                onMouseLeave={handleFieldLeave}
                 className={fieldButtonClass('prism')}
               >
                 {prism || '--'}
@@ -595,7 +475,6 @@ function RxPicker({
               // #endregion
               if (!isLocked) setActiveField(activeField); 
             }}
-            onMouseLeave={handleFieldLeave}
           >
             <div className="text-[10px] text-muted-foreground mb-1 text-center uppercase font-medium flex items-center justify-center gap-1">
               <span>{activeField === 'sphere' ? 'Sphère' : activeField === 'cylinder' ? 'Cylindre' : activeField === 'axis' ? 'Axe' : activeField === 'add' ? 'Addition' : activeField === 'vertex' ? 'Vertex' : 'Prisme'}</span>
