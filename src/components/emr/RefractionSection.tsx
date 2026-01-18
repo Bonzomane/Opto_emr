@@ -6,7 +6,7 @@ import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
 import { SectionHeader } from './SectionHeader';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface RefractionSectionProps {
   refraction: RefractionData;
@@ -181,16 +181,41 @@ function RxField({
 }) {
   const [showNumpad, setShowNumpad] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const hideTimeoutRef = useRef<number | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleMouseEnter = () => {
+    // Cancel any pending hide
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
     if (!isLocked) setShowNumpad(true);
   };
 
   const handleMouseLeave = () => {
-    if (!isLocked) setShowNumpad(false);
+    if (isLocked) return;
+    // Delay hide by 150ms for forgiveness
+    hideTimeoutRef.current = window.setTimeout(() => {
+      setShowNumpad(false);
+      hideTimeoutRef.current = null;
+    }, 150);
   };
 
   const handleClick = () => {
+    // Cancel any pending hide
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
     if (isLocked) {
       setIsLocked(false);
       setShowNumpad(false);
