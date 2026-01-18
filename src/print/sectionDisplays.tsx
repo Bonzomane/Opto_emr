@@ -240,39 +240,88 @@ export function BinoDisplay({ bino }: { bino: BinocularVision }) {
 }
 
 export function RefractionDisplay({ rx }: { rx: RefractionData }) {
-  const hasData = rx.rxOD || rx.rxOS;
-  if (!hasData) return <Empty />;
+  const hasSubjective = rx.rxOD || rx.rxOS;
+  const hasFinal = rx.finalRxOD || rx.finalRxOS;
+  const hasCyclo = rx.cycloUsed && (rx.cycloRxOD || rx.cycloRxOS);
+  
+  if (!hasSubjective && !hasFinal && !hasCyclo) return <Empty />;
+
+  // Use final if set, otherwise fall back to subjective
+  const displayFinalOD = rx.finalRxOD || rx.rxOD;
+  const displayFinalOS = rx.finalRxOS || rx.rxOS;
+  const displayFinalAddOD = rx.finalAddOD || rx.addOD;
+  const displayFinalAddOS = rx.finalAddOS || rx.addOS;
 
   return (
-    <div className="space-y-1 text-[10px]">
-      <DataRow label="Rx">
-        <div className="flex flex-col">
-          {rx.rxOD && <span>OD: {formatRxDisplay(rx.rxOD)}{rx.addOD && ` add ${rx.addOD}`}</span>}
-          {rx.rxOS && <span>OS: {formatRxDisplay(rx.rxOS)}{rx.addOS && ` add ${rx.addOS}`}</span>}
+    <div className="space-y-2 text-[10px]">
+      {/* Rx Subjective */}
+      {hasSubjective && (
+        <div className="space-y-0.5">
+          <div className="font-semibold text-zinc-600">Rx Subjective</div>
+          <DataRow label="Rx">
+            <div className="flex flex-col">
+              {rx.rxOD && <span>OD: {formatRxDisplay(rx.rxOD)}{rx.addOD && ` add ${rx.addOD}`}</span>}
+              {rx.rxOS && <span>OS: {formatRxDisplay(rx.rxOS)}{rx.addOS && ` add ${rx.addOS}`}</span>}
+            </div>
+          </DataRow>
+          {(rx.subjAvOD || rx.subjAvOS || rx.subjAvOU) && (
+            <DataRow label="AV">
+              {rx.subjAvOD && <span>OD: {rx.subjAvOD}</span>}
+              {rx.subjAvOS && <span> OS: {rx.subjAvOS}</span>}
+              {rx.subjAvOU && <span> OU: {rx.subjAvOU}</span>}
+            </DataRow>
+          )}
         </div>
-      </DataRow>
-      {(rx.avOD || rx.avOS || rx.avOU) && (
-        <DataRow label="AV">
-          {rx.avOD && <span>OD: {rx.avOD}</span>}
-          {rx.avOS && <span>OS: {rx.avOS}</span>}
-          {rx.avOU && <span>OU: {rx.avOU}</span>}
-        </DataRow>
       )}
+
+      {/* Rx Finale */}
+      {(displayFinalOD || displayFinalOS) && (
+        <div className="space-y-0.5">
+          <div className="font-semibold text-zinc-600">Rx Finale</div>
+          <DataRow label="Rx">
+            <div className="flex flex-col">
+              {displayFinalOD && <span>OD: {formatRxDisplay(displayFinalOD)}{displayFinalAddOD && ` add ${displayFinalAddOD}`}</span>}
+              {displayFinalOS && <span>OS: {formatRxDisplay(displayFinalOS)}{displayFinalAddOS && ` add ${displayFinalAddOS}`}</span>}
+            </div>
+          </DataRow>
+          {(rx.avOD || rx.avOS || rx.avOU) && (
+            <DataRow label="MAV">
+              {rx.avOD && <span>OD: {rx.avOD}</span>}
+              {rx.avOS && <span> OS: {rx.avOS}</span>}
+              {rx.avOU && <span> OU: {rx.avOU}</span>}
+            </DataRow>
+          )}
+        </div>
+      )}
+
+      {/* DP */}
       {(rx.dpVL || rx.dpVP) && (
         <DataRow label="DP">
           {rx.dpVL && <span>VL: {rx.dpVL}</span>}
-          {rx.dpVP && <span>VP: {rx.dpVP}</span>}
+          {rx.dpVP && <span> VP: {rx.dpVP}</span>}
         </DataRow>
       )}
-      {rx.cycloUsed && (rx.cycloRxOD || rx.cycloRxOS) && (
-        <DataRow label="Cyclo">
-          <div className="flex flex-col">
-            {rx.cycloRxOD && <span>OD: {formatRxDisplay(rx.cycloRxOD)}</span>}
-            {rx.cycloRxOS && <span>OS: {formatRxDisplay(rx.cycloRxOS)}</span>}
-            {rx.cycloAgent && <span className="text-zinc-400">({rx.cycloAgent})</span>}
-          </div>
-        </DataRow>
+
+      {/* Cycloplégie */}
+      {hasCyclo && (
+        <div className="space-y-0.5">
+          <div className="font-semibold text-zinc-600">Cycloplégie {rx.cycloAgent && <span className="font-normal text-zinc-400">({rx.cycloAgent})</span>}</div>
+          <DataRow label="Rx">
+            <div className="flex flex-col">
+              {rx.cycloRxOD && <span>OD: {formatRxDisplay(rx.cycloRxOD)}{rx.cycloAddOD && ` add ${rx.cycloAddOD}`}</span>}
+              {rx.cycloRxOS && <span>OS: {formatRxDisplay(rx.cycloRxOS)}{rx.cycloAddOS && ` add ${rx.cycloAddOS}`}</span>}
+            </div>
+          </DataRow>
+          {(rx.cycloAvOD || rx.cycloAvOS || rx.cycloAvOU) && (
+            <DataRow label="AV">
+              {rx.cycloAvOD && <span>OD: {rx.cycloAvOD}</span>}
+              {rx.cycloAvOS && <span> OS: {rx.cycloAvOS}</span>}
+              {rx.cycloAvOU && <span> OU: {rx.cycloAvOU}</span>}
+            </DataRow>
+          )}
+        </div>
       )}
+
       {rx.notes && <Note text={rx.notes} />}
     </div>
   );

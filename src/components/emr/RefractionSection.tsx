@@ -308,6 +308,7 @@ function RxPicker({
   axis,
   add,
   av,
+  avLabel = 'AV',
   onSphereChange,
   onCylinderChange,
   onAxisChange,
@@ -320,6 +321,7 @@ function RxPicker({
   axis: string;
   add: string;
   av?: string;
+  avLabel?: string;
   onSphereChange: (v: string) => void;
   onCylinderChange: (v: string) => void;
   onAxisChange: (v: string) => void;
@@ -414,7 +416,7 @@ function RxPicker({
         {/* AV column - optional */}
         {onAvChange && (
           <div className="flex items-center gap-1">
-            <span className="text-xs text-muted-foreground w-6">AV</span>
+            <span className="text-xs text-muted-foreground w-8">{avLabel}</span>
             <div className="flex flex-wrap gap-0.5">
               {VA_COMMON.map((v) => (
                 <button
@@ -515,10 +517,12 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
             cylinder={odParsed.cylinder}
             axis={odParsed.axis}
             add={refraction.addOD}
+            av={refraction.subjAvOD}
             onSphereChange={(v) => onChange({ rxOD: combineRx(v, odParsed.cylinder, odParsed.axis) })}
             onCylinderChange={(v) => onChange({ rxOD: combineRx(odParsed.sphere, v, odParsed.axis) })}
             onAxisChange={(v) => onChange({ rxOD: combineRx(odParsed.sphere, odParsed.cylinder, v) })}
             onAddChange={(v) => onChange({ addOD: v })}
+            onAvChange={(v) => onChange({ subjAvOD: v })}
           />
           <RxPicker
             label="OS"
@@ -526,11 +530,49 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
             cylinder={osParsed.cylinder}
             axis={osParsed.axis}
             add={refraction.addOS}
+            av={refraction.subjAvOS}
             onSphereChange={(v) => onChange({ rxOS: combineRx(v, osParsed.cylinder, osParsed.axis) })}
             onCylinderChange={(v) => onChange({ rxOS: combineRx(osParsed.sphere, v, osParsed.axis) })}
             onAxisChange={(v) => onChange({ rxOS: combineRx(osParsed.sphere, osParsed.cylinder, v) })}
             onAddChange={(v) => onChange({ addOS: v })}
+            onAvChange={(v) => onChange({ subjAvOS: v })}
           />
+          {/* OU AV inline */}
+          <div className="flex items-center gap-2 pl-8">
+            <span className="text-sm font-bold">OU</span>
+            <span className="text-xs text-muted-foreground">AV</span>
+            <div className="flex flex-wrap gap-0.5">
+              {VA_COMMON.map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => onChange({ subjAvOU: refraction.subjAvOU === v ? '' : v })}
+                  className={cn(
+                    "h-8 px-1.5 text-xs rounded border",
+                    refraction.subjAvOU === v 
+                      ? "bg-primary text-primary-foreground border-primary" 
+                      : "bg-background border-border hover:bg-muted"
+                  )}
+                >
+                  {v}
+                </button>
+              ))}
+              <DropdownButton
+                label="+"
+                selectedLabel={VA_OPTIONS.find((o) => o.id === refraction.subjAvOU && !VA_COMMON.includes(o.id))?.label}
+              >
+                {VA_OPTIONS.filter((o) => !VA_COMMON.includes(o.id)).map((opt) => (
+                  <DropdownOption
+                    key={opt.id}
+                    label={opt.label}
+                    selected={refraction.subjAvOU === opt.id}
+                    onSelect={() => onChange({ subjAvOU: opt.id })}
+                    onDeselect={() => onChange({ subjAvOU: '' })}
+                  />
+                ))}
+              </DropdownButton>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -556,6 +598,7 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
             axis={finalOdParsed.axis}
             add={finalAddOD}
             av={refraction.avOD}
+            avLabel="MAV"
             onSphereChange={(v) => onChange({ finalRxOD: combineRx(v, finalOdParsed.cylinder, finalOdParsed.axis) })}
             onCylinderChange={(v) => onChange({ finalRxOD: combineRx(finalOdParsed.sphere, v, finalOdParsed.axis) })}
             onAxisChange={(v) => onChange({ finalRxOD: combineRx(finalOdParsed.sphere, finalOdParsed.cylinder, v) })}
@@ -569,16 +612,17 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
             axis={finalOsParsed.axis}
             add={finalAddOS}
             av={refraction.avOS}
+            avLabel="MAV"
             onSphereChange={(v) => onChange({ finalRxOS: combineRx(v, finalOsParsed.cylinder, finalOsParsed.axis) })}
             onCylinderChange={(v) => onChange({ finalRxOS: combineRx(finalOsParsed.sphere, v, finalOsParsed.axis) })}
             onAxisChange={(v) => onChange({ finalRxOS: combineRx(finalOsParsed.sphere, finalOsParsed.cylinder, v) })}
             onAddChange={(v) => onChange({ finalAddOS: v })}
             onAvChange={(v) => onChange({ avOS: v })}
           />
-          {/* OU AV inline */}
+          {/* OU MAV inline */}
           <div className="flex items-center gap-2 pl-8">
             <span className="text-sm font-bold">OU</span>
-            <span className="text-xs text-muted-foreground">AV</span>
+            <span className="text-xs text-muted-foreground">MAV</span>
             <div className="flex flex-wrap gap-0.5">
               {VA_COMMON.map((v) => (
                 <button
@@ -681,10 +725,12 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
                   cylinder={cycloOdParsed.cylinder}
                   axis={cycloOdParsed.axis}
                   add={refraction.cycloAddOD}
+                  av={refraction.cycloAvOD}
                   onSphereChange={(v) => onChange({ cycloRxOD: combineRx(v, cycloOdParsed.cylinder, cycloOdParsed.axis) })}
                   onCylinderChange={(v) => onChange({ cycloRxOD: combineRx(cycloOdParsed.sphere, v, cycloOdParsed.axis) })}
                   onAxisChange={(v) => onChange({ cycloRxOD: combineRx(cycloOdParsed.sphere, cycloOdParsed.cylinder, v) })}
                   onAddChange={(v) => onChange({ cycloAddOD: v })}
+                  onAvChange={(v) => onChange({ cycloAvOD: v })}
                 />
                 <RxPicker
                   label="OS"
@@ -692,11 +738,49 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
                   cylinder={cycloOsParsed.cylinder}
                   axis={cycloOsParsed.axis}
                   add={refraction.cycloAddOS}
+                  av={refraction.cycloAvOS}
                   onSphereChange={(v) => onChange({ cycloRxOS: combineRx(v, cycloOsParsed.cylinder, cycloOsParsed.axis) })}
                   onCylinderChange={(v) => onChange({ cycloRxOS: combineRx(cycloOsParsed.sphere, v, cycloOsParsed.axis) })}
                   onAxisChange={(v) => onChange({ cycloRxOS: combineRx(cycloOsParsed.sphere, cycloOsParsed.cylinder, v) })}
                   onAddChange={(v) => onChange({ cycloAddOS: v })}
+                  onAvChange={(v) => onChange({ cycloAvOS: v })}
                 />
+                {/* OU AV inline */}
+                <div className="flex items-center gap-2 pl-8">
+                  <span className="text-sm font-bold">OU</span>
+                  <span className="text-xs text-muted-foreground">AV</span>
+                  <div className="flex flex-wrap gap-0.5">
+                    {VA_COMMON.map((v) => (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => onChange({ cycloAvOU: refraction.cycloAvOU === v ? '' : v })}
+                        className={cn(
+                          "h-8 px-1.5 text-xs rounded border",
+                          refraction.cycloAvOU === v 
+                            ? "bg-primary text-primary-foreground border-primary" 
+                            : "bg-background border-border hover:bg-muted"
+                        )}
+                      >
+                        {v}
+                      </button>
+                    ))}
+                    <DropdownButton
+                      label="+"
+                      selectedLabel={VA_OPTIONS.find((o) => o.id === refraction.cycloAvOU && !VA_COMMON.includes(o.id))?.label}
+                    >
+                      {VA_OPTIONS.filter((o) => !VA_COMMON.includes(o.id)).map((opt) => (
+                        <DropdownOption
+                          key={opt.id}
+                          label={opt.label}
+                          selected={refraction.cycloAvOU === opt.id}
+                          onSelect={() => onChange({ cycloAvOU: opt.id })}
+                          onDeselect={() => onChange({ cycloAvOU: '' })}
+                        />
+                      ))}
+                    </DropdownButton>
+                  </div>
+                </div>
               </div>
             </div>
           );

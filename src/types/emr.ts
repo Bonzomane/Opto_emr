@@ -137,6 +137,9 @@ export interface RefractionData {
   rxOS: string;
   addOD: string;
   addOS: string;
+  subjAvOD: string;
+  subjAvOS: string;
+  subjAvOU: string;
   
   // Rx Finale (by default copies from subjective, but can be modified)
   finalRxOD: string;
@@ -144,7 +147,7 @@ export interface RefractionData {
   finalAddOD: string;
   finalAddOS: string;
   
-  // AV avec Rx finale
+  // MAV (Meilleure Acuité Visuelle) avec Rx finale
   avOD: string;
   avOS: string;
   avOU: string;
@@ -159,6 +162,9 @@ export interface RefractionData {
   cycloRxOS: string;
   cycloAddOD: string;
   cycloAddOS: string;
+  cycloAvOD: string;
+  cycloAvOS: string;
+  cycloAvOU: string;
   cycloAgent: string; // cyclopentolate, tropicamide, atropine
   
   notes: string;
