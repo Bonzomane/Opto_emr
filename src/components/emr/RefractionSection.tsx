@@ -224,6 +224,7 @@ function RxPicker({
   const [addSign, setAddSign] = useState<SignValue>(() => inferSign(add, '+'));
   const [activeField, setActiveField] = useState<RxField | null>(null);
   const [showExtras, setShowExtras] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
   const [sphere, setSphere] = useState(parsed.sphere);
   const [cylinder, setCylinder] = useState(parsed.cylinder);
   const [axis, setAxis] = useState(parsed.axis);
@@ -248,7 +249,27 @@ function RxPicker({
   }, [showExtras, activeField]);
 
   const handleFieldClick = (field: RxField) => {
-    setActiveField(activeField === field ? null : field);
+    if (activeField === field && isLocked) {
+      // Clicking same field when locked = unlock and close
+      setIsLocked(false);
+      setActiveField(null);
+    } else {
+      // Lock to this field
+      setIsLocked(true);
+      setActiveField(field);
+    }
+  };
+
+  const handleFieldHover = (field: RxField) => {
+    if (!isLocked) {
+      setActiveField(field);
+    }
+  };
+
+  const handleFieldLeave = () => {
+    if (!isLocked) {
+      setActiveField(null);
+    }
   };
 
   const updateRx = (newSphere: string, newCylinder: string, newAxis: string) => {
@@ -261,7 +282,9 @@ function RxPicker({
   const applyPowerDigits = (current: string, sign: SignValue, digit: string) => {
     const digits = current.replace(/\D/g, '');
     const nextDigits = appendDigits(digits, digit, MAX_POWER_DIGITS);
-    return nextDigits ? autocompletePower(`${sign}${nextDigits}`) : '';
+    if (!nextDigits) return '';
+    const result = autocompletePower(`${sign}${nextDigits}`);
+    return result;
   };
 
   const backspacePowerDigits = (current: string, sign: SignValue) => {
@@ -417,6 +440,8 @@ function RxPicker({
           <button
             type="button"
             onClick={() => handleFieldClick('sphere')}
+            onMouseEnter={() => handleFieldHover('sphere')}
+            onMouseLeave={handleFieldLeave}
             className={fieldButtonClass('sphere')}
           >
             {sphere || '0.00'}
@@ -434,6 +459,8 @@ function RxPicker({
           <button
             type="button"
             onClick={() => handleFieldClick('cylinder')}
+            onMouseEnter={() => handleFieldHover('cylinder')}
+            onMouseLeave={handleFieldLeave}
             className={fieldButtonClass('cylinder')}
           >
             {cylinder || '0.00'}
@@ -444,6 +471,8 @@ function RxPicker({
           <button
             type="button"
             onClick={() => handleFieldClick('axis')}
+            onMouseEnter={() => handleFieldHover('axis')}
+            onMouseLeave={handleFieldLeave}
             className={fieldButtonClass('axis')}
           >
             {axis || '180'}
@@ -460,6 +489,8 @@ function RxPicker({
           <button
             type="button"
             onClick={() => handleFieldClick('add')}
+            onMouseEnter={() => handleFieldHover('add')}
+            onMouseLeave={handleFieldLeave}
             className={fieldButtonClass('add')}
           >
             {add || '0.00'}
@@ -471,6 +502,8 @@ function RxPicker({
               <button
                 type="button"
                 onClick={() => handleFieldClick('vertex')}
+                onMouseEnter={() => handleFieldHover('vertex')}
+                onMouseLeave={handleFieldLeave}
                 className={fieldButtonClass('vertex')}
               >
                 {vertex || '--'}
@@ -480,6 +513,8 @@ function RxPicker({
               <button
                 type="button"
                 onClick={() => handleFieldClick('prism')}
+                onMouseEnter={() => handleFieldHover('prism')}
+                onMouseLeave={handleFieldLeave}
                 className={fieldButtonClass('prism')}
               >
                 {prism || '--'}
@@ -500,9 +535,12 @@ function RxPicker({
           <div 
             className="absolute left-0 top-full mt-1 z-50 rounded-md border border-border bg-white p-2"
             style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+            onMouseEnter={() => { if (!isLocked) setActiveField(activeField); }}
+            onMouseLeave={handleFieldLeave}
           >
-            <div className="text-[10px] text-muted-foreground mb-1 text-center uppercase font-medium">
-              {activeField === 'sphere' ? 'Sphère' : activeField === 'cylinder' ? 'Cylindre' : activeField === 'axis' ? 'Axe' : activeField === 'add' ? 'Addition' : activeField === 'vertex' ? 'Vertex' : 'Prisme'}
+            <div className="text-[10px] text-muted-foreground mb-1 text-center uppercase font-medium flex items-center justify-center gap-1">
+              <span>{activeField === 'sphere' ? 'Sphère' : activeField === 'cylinder' ? 'Cylindre' : activeField === 'axis' ? 'Axe' : activeField === 'add' ? 'Addition' : activeField === 'vertex' ? 'Vertex' : 'Prisme'}</span>
+              {isLocked && <span className="text-primary">🔒</span>}
             </div>
             <div className="flex gap-px">
               <div className="grid grid-cols-3 gap-px">
