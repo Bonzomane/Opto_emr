@@ -100,67 +100,101 @@ function NumpadPopup({
         className="rounded-md border border-border bg-white p-2"
         style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
       >
-        {/* Grid layout: 4 rows x N columns */}
+        {/* Grid layout */}
         <div className="flex gap-1">
-        {/* Column 1-3: Numbers 1-9, then 0/</C */}
-        <div className="flex flex-col gap-px">
-          <div className="flex gap-px">
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('1'); }} className={btnClass}>1</button>
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('2'); }} className={btnClass}>2</button>
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('3'); }} className={btnClass}>3</button>
-          </div>
-          <div className="flex gap-px">
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('4'); }} className={btnClass}>4</button>
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('5'); }} className={btnClass}>5</button>
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('6'); }} className={btnClass}>6</button>
-          </div>
-          <div className="flex gap-px">
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('7'); }} className={btnClass}>7</button>
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('8'); }} className={btnClass}>8</button>
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('9'); }} className={btnClass}>9</button>
-          </div>
-          <div className="flex gap-px">
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('0'); }} className={btnClass}>0</button>
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); backspace(); }} className={btnClass}>&lt;</button>
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); clear(); }} className={btnClass}>C</button>
-          </div>
-        </div>
-
-        {/* Decimal column for power fields */}
-        {fieldType === 'power' && (
+          {/* Numbers 1-9 and 0 */}
           <div className="flex flex-col gap-px">
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.25'); }} className={btnSmClass}>.25</button>
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.50'); }} className={btnSmClass}>.50</button>
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.75'); }} className={btnSmClass}>.75</button>
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.00'); }} className={btnSmClass}>.00</button>
+            <div className="flex gap-px">
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('1'); }} className={btnClass}>1</button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('2'); }} className={btnClass}>2</button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('3'); }} className={btnClass}>3</button>
+            </div>
+            <div className="flex gap-px">
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('4'); }} className={btnClass}>4</button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('5'); }} className={btnClass}>5</button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('6'); }} className={btnClass}>6</button>
+            </div>
+            <div className="flex gap-px">
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('7'); }} className={btnClass}>7</button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('8'); }} className={btnClass}>8</button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('9'); }} className={btnClass}>9</button>
+            </div>
+            <div className="flex gap-px justify-center">
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDigit('0'); }} className={btnClass}>0</button>
+            </div>
           </div>
-        )}
 
-        {/* Sign toggle for power fields */}
-        {fieldType === 'power' && onSignToggle && (
-          <div className="flex flex-col gap-px">
-            <button
-              type="button"
-              onMouseDown={(e) => { e.preventDefault(); onSignToggle(); }}
-              className={cn(
-                "w-8 h-8 text-sm font-bold rounded border flex items-center justify-center",
-                sign === '-' ? 'bg-zinc-800 text-white border-zinc-800' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
-              )}
-            >
-              −
-            </button>
-            <button
-              type="button"
-              onMouseDown={(e) => { e.preventDefault(); onSignToggle(); }}
-              className={cn(
-                "w-8 h-8 text-sm font-bold rounded border flex items-center justify-center",
-                sign === '+' ? 'bg-zinc-800 text-white border-zinc-800' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
-              )}
-            >
-              +
-            </button>
-          </div>
-        )}
+          {/* Decimal column for power fields */}
+          {fieldType === 'power' && (
+            <div className="flex flex-col gap-px">
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.25'); }} className={btnSmClass}>.25</button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.50'); }} className={btnSmClass}>.50</button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.75'); }} className={btnSmClass}>.75</button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.00'); }} className={btnSmClass}>.00</button>
+            </div>
+          )}
+
+          {/* Sign toggle + backspace/clear for power fields */}
+          {fieldType === 'power' && onSignToggle && (
+            <div className="flex flex-col gap-px">
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); onSignToggle(); }}
+                className={cn(
+                  "w-8 h-8 text-sm font-bold rounded border flex items-center justify-center",
+                  sign === '-' ? 'bg-zinc-800 text-white border-zinc-800' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
+                )}
+              >
+                −
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); onSignToggle(); }}
+                className={cn(
+                  "w-8 h-8 text-sm font-bold rounded border flex items-center justify-center",
+                  sign === '+' ? 'bg-zinc-800 text-white border-zinc-800' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
+                )}
+              >
+                +
+              </button>
+              {/* Backspace - orange */}
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); backspace(); }}
+                className="w-8 h-8 text-sm font-bold rounded border flex items-center justify-center bg-amber-500 text-white border-amber-600 hover:bg-amber-600 active:bg-amber-700"
+              >
+                &lt;
+              </button>
+              {/* Clear - red */}
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); clear(); }}
+                className="w-8 h-8 text-sm font-bold rounded border flex items-center justify-center bg-red-500 text-white border-red-600 hover:bg-red-600 active:bg-red-700"
+              >
+                C
+              </button>
+            </div>
+          )}
+
+          {/* For axis fields (no sign toggle), show backspace/clear in their own column */}
+          {fieldType === 'axis' && (
+            <div className="flex flex-col gap-px">
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); backspace(); }}
+                className="w-8 h-8 text-sm font-bold rounded border flex items-center justify-center bg-amber-500 text-white border-amber-600 hover:bg-amber-600 active:bg-amber-700"
+              >
+                &lt;
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); clear(); }}
+                className="w-8 h-8 text-sm font-bold rounded border flex items-center justify-center bg-red-500 text-white border-red-600 hover:bg-red-600 active:bg-red-700"
+              >
+                C
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
