@@ -222,9 +222,8 @@ function RxPicker({
   const [rxSign, setRxSign] = useState<SignValue>(() => inferSign(value, '-'));
   const [cylSign, setCylSign] = useState<SignValue>(() => inferSign(parsed.cylinder, '-'));
   const [addSign, setAddSign] = useState<SignValue>(() => inferSign(add, '+'));
-  const [activeField, setActiveField] = useState<RxField>('sphere');
+  const [activeField, setActiveField] = useState<RxField | null>(null);
   const [showExtras, setShowExtras] = useState(false);
-  const [showPad, setShowPad] = useState(false);
   const [sphere, setSphere] = useState(parsed.sphere);
   const [cylinder, setCylinder] = useState(parsed.cylinder);
   const [axis, setAxis] = useState(parsed.axis);
@@ -244,9 +243,13 @@ function RxPicker({
 
   useEffect(() => {
     if (!showExtras && (activeField === 'vertex' || activeField === 'prism')) {
-      setActiveField('sphere');
+      setActiveField(null);
     }
   }, [showExtras, activeField]);
+
+  const handleFieldClick = (field: RxField) => {
+    setActiveField(activeField === field ? null : field);
+  };
 
   const updateRx = (newSphere: string, newCylinder: string, newAxis: string) => {
     setSphere(newSphere);
@@ -318,6 +321,7 @@ function RxPicker({
   };
 
   const appendDigit = (digit: number) => {
+    if (!activeField) return;
     const nextDigit = String(digit);
     switch (activeField) {
       case 'sphere':
@@ -342,6 +346,7 @@ function RxPicker({
   };
 
   const backspaceActive = () => {
+    if (!activeField) return;
     switch (activeField) {
       case 'sphere':
         updateRx(backspacePowerDigits(sphere, rxSign), cylinder, axis);
@@ -365,6 +370,7 @@ function RxPicker({
   };
 
   const clearActive = () => {
+    if (!activeField) return;
     switch (activeField) {
       case 'sphere':
         updateRx('', cylinder, axis);
@@ -399,11 +405,7 @@ function RxPicker({
     <div className="space-y-2">
       <span className="text-sm font-bold">{label}</span>
 
-      <div
-        className="relative"
-        onMouseEnter={() => setShowPad(true)}
-        onMouseLeave={() => setShowPad(false)}
-      >
+      <div className="relative">
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/20 px-2 py-2">
           <button
             type="button"
@@ -414,7 +416,7 @@ function RxPicker({
           </button>
           <button
             type="button"
-            onClick={() => setActiveField('sphere')}
+            onClick={() => handleFieldClick('sphere')}
             className={fieldButtonClass('sphere')}
           >
             {sphere || '0.00'}
@@ -431,7 +433,7 @@ function RxPicker({
           </button>
           <button
             type="button"
-            onClick={() => setActiveField('cylinder')}
+            onClick={() => handleFieldClick('cylinder')}
             className={fieldButtonClass('cylinder')}
           >
             {cylinder || '0.00'}
@@ -441,7 +443,7 @@ function RxPicker({
 
           <button
             type="button"
-            onClick={() => setActiveField('axis')}
+            onClick={() => handleFieldClick('axis')}
             className={fieldButtonClass('axis')}
           >
             {axis || '180'}
@@ -457,7 +459,7 @@ function RxPicker({
           </button>
           <button
             type="button"
-            onClick={() => setActiveField('add')}
+            onClick={() => handleFieldClick('add')}
             className={fieldButtonClass('add')}
           >
             {add || '0.00'}
@@ -468,7 +470,7 @@ function RxPicker({
               <span className="text-xs text-muted-foreground">VTX</span>
               <button
                 type="button"
-                onClick={() => setActiveField('vertex')}
+                onClick={() => handleFieldClick('vertex')}
                 className={fieldButtonClass('vertex')}
               >
                 {vertex || '--'}
@@ -477,7 +479,7 @@ function RxPicker({
               <span className="text-xs text-muted-foreground">PR</span>
               <button
                 type="button"
-                onClick={() => setActiveField('prism')}
+                onClick={() => handleFieldClick('prism')}
                 className={fieldButtonClass('prism')}
               >
                 {prism || '--'}
@@ -494,47 +496,48 @@ function RxPicker({
           </button>
         </div>
 
-        {showPad && (
-          <div
-            className="mt-2 inline-block rounded-md border border-border bg-white p-2 shadow-sm"
-            onMouseEnter={() => setShowPad(true)}
-            onMouseLeave={() => setShowPad(false)}
-          >
-            <div className="grid grid-cols-[repeat(3,1.25rem)] gap-px">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+        {activeField && (
+          <div className="mt-2 inline-block rounded-md border border-border bg-white p-2 shadow-lg">
+            <div className="text-[10px] text-muted-foreground mb-1 text-center uppercase">
+              {activeField === 'sphere' ? 'Sphère' : activeField === 'cylinder' ? 'Cylindre' : activeField === 'axis' ? 'Axe' : activeField === 'add' ? 'Addition' : activeField === 'vertex' ? 'Vertex' : 'Prisme'}
+            </div>
+            <div className="flex gap-px">
+              <div className="grid grid-cols-3 gap-px">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => appendDigit(num)}
+                    className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+              <div className="grid grid-rows-3 gap-px">
                 <button
-                  key={num}
                   type="button"
-                  onClick={() => appendDigit(num)}
+                  onClick={backspaceActive}
+                  className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+                  aria-label="Retour"
+                >
+                  &lt;
+                </button>
+                <button
+                  type="button"
+                  onClick={() => appendDigit(0)}
                   className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
                 >
-                  {num}
+                  0
                 </button>
-              ))}
-            </div>
-            <div className="mt-1 grid grid-rows-3 gap-px">
-              <button
-                type="button"
-                onClick={backspaceActive}
-                className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
-                aria-label="Retour"
-              >
-                &lt;
-              </button>
-              <button
-                type="button"
-                onClick={() => appendDigit(0)}
-                className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
-              >
-                0
-              </button>
-              <button
-                type="button"
-                onClick={clearActive}
-                className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
-              >
-                C
-              </button>
+                <button
+                  type="button"
+                  onClick={clearActive}
+                  className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+                >
+                  C
+                </button>
+              </div>
             </div>
           </div>
         )}
