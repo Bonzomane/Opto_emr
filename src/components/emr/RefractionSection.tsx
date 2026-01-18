@@ -53,12 +53,15 @@ function NumpadPopup({
 
   // Append digit to integer part only
   const appendDigit = (digit: string) => {
-    // For axis, max 3 digits
-    if (fieldType === 'axis' && intPart.length >= 3) return;
-    // For power, max 2 digits (e.g., 12.50)
-    if (fieldType === 'power' && intPart.length >= 2) return;
+    // If intPart is just '0', replace it (don't allow '05')
+    const effectiveInt = intPart === '0' ? '' : intPart;
     
-    const newInt = intPart + digit;
+    // For axis, max 3 digits
+    if (fieldType === 'axis' && effectiveInt.length >= 3) return;
+    // For power, max 2 digits (e.g., 12.50)
+    if (fieldType === 'power' && effectiveInt.length >= 2) return;
+    
+    const newInt = effectiveInt + digit;
     const newValue = fieldType === 'power' ? newInt + decPart : newInt;
     
     if (fieldType === 'power' && sign) {
