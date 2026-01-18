@@ -45,14 +45,22 @@ function NumpadPopup({
   sign?: '+' | '-';
   onSignToggle?: () => void;
 }) {
+  // Parse value into integer and decimal parts
+  const stripped = value.replace(/[^0-9.]/g, '');
+  const dotIndex = stripped.indexOf('.');
+  const intPart = dotIndex >= 0 ? stripped.slice(0, dotIndex) : stripped;
+  const decPart = dotIndex >= 0 ? stripped.slice(dotIndex) : '.00'; // default to .00
+
+  // Append digit to integer part only
   const appendDigit = (digit: string) => {
-    const current = value.replace(/[^0-9.]/g, '');
     // For axis, max 3 digits
-    if (fieldType === 'axis' && current.replace('.', '').length >= 3) return;
-    // For power, max length with decimal
-    if (fieldType === 'power' && current.length >= 5) return;
+    if (fieldType === 'axis' && intPart.length >= 3) return;
+    // For power, max 2 digits (e.g., 12.50)
+    if (fieldType === 'power' && intPart.length >= 2) return;
     
-    const newValue = current + digit;
+    const newInt = intPart + digit;
+    const newValue = fieldType === 'power' ? newInt + decPart : newInt;
+    
     if (fieldType === 'power' && sign) {
       onChange(sign + newValue);
     } else {
@@ -60,21 +68,22 @@ function NumpadPopup({
     }
   };
 
-  const appendDecimal = (decimal: string) => {
-    // Append .25, .50, or .75 to current integer part
-    const current = value.replace(/[^0-9]/g, '');
-    const intPart = current || '0';
-    const newValue = intPart + decimal;
-    if (fieldType === 'power' && sign) {
+  // Select decimal (exclusive - replaces current decimal)
+  const selectDecimal = (decimal: string) => {
+    const newValue = (intPart || '0') + decimal;
+    if (sign) {
       onChange(sign + newValue);
     } else {
       onChange(newValue);
     }
   };
 
+  // Backspace removes last digit from integer part
   const backspace = () => {
-    const current = value.replace(/[^0-9.]/g, '');
-    const newValue = current.slice(0, -1);
+    if (intPart.length === 0) return;
+    const newInt = intPart.slice(0, -1);
+    const newValue = fieldType === 'power' ? (newInt || '0') + decPart : newInt;
+    
     if (fieldType === 'power' && sign && newValue) {
       onChange(sign + newValue);
     } else {
@@ -86,9 +95,14 @@ function NumpadPopup({
     onChange('');
   };
 
-  // Button style for consistency
+  // Button styles
   const btnClass = "w-8 h-8 text-sm font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200 flex items-center justify-center";
-  const btnSmClass = "w-10 h-8 text-xs font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200 flex items-center justify-center";
+  const btnDecClass = (dec: string) => cn(
+    "w-10 h-8 text-xs font-medium rounded border flex items-center justify-center",
+    decPart === dec 
+      ? "bg-zinc-800 text-white border-zinc-800" 
+      : "bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100"
+  );
 
   return (
     <div 
@@ -124,13 +138,13 @@ function NumpadPopup({
             </div>
           </div>
 
-          {/* Decimal column for power fields */}
+          {/* Decimal column for power fields - exclusive selection */}
           {fieldType === 'power' && (
             <div className="flex flex-col gap-px">
-              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.25'); }} className={btnSmClass}>.25</button>
-              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.50'); }} className={btnSmClass}>.50</button>
-              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.75'); }} className={btnSmClass}>.75</button>
-              <button type="button" onMouseDown={(e) => { e.preventDefault(); appendDecimal('.00'); }} className={btnSmClass}>.00</button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); selectDecimal('.25'); }} className={btnDecClass('.25')}>.25</button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); selectDecimal('.50'); }} className={btnDecClass('.50')}>.50</button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); selectDecimal('.75'); }} className={btnDecClass('.75')}>.75</button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); selectDecimal('.00'); }} className={btnDecClass('.00')}>.00</button>
             </div>
           )}
 
