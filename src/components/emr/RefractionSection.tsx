@@ -307,20 +307,24 @@ function RxPicker({
   cylinder,
   axis,
   add,
+  av,
   onSphereChange,
   onCylinderChange,
   onAxisChange,
   onAddChange,
+  onAvChange,
 }: {
   label: string;
   sphere: string;
   cylinder: string;
   axis: string;
   add: string;
+  av?: string;
   onSphereChange: (v: string) => void;
   onCylinderChange: (v: string) => void;
   onAxisChange: (v: string) => void;
   onAddChange: (v: string) => void;
+  onAvChange?: (v: string) => void;
 }) {
   const [sphSign, setSphSign] = useState<'+' | '-'>(() => sphere.includes('+') ? '+' : '-');
   const [cylSign, setCylSign] = useState<'+' | '-'>(() => cylinder.includes('+') ? '+' : '-');
@@ -407,6 +411,43 @@ function RxPicker({
           }}
           placeholder="0.00"
         />
+        {/* AV column - optional */}
+        {onAvChange && (
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-muted-foreground w-6">AV</span>
+            <div className="flex flex-wrap gap-0.5">
+              {VA_COMMON.map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => onAvChange(av === v ? '' : v)}
+                  className={cn(
+                    "h-8 px-1.5 text-xs rounded border",
+                    av === v 
+                      ? "bg-primary text-primary-foreground border-primary" 
+                      : "bg-background border-border hover:bg-muted"
+                  )}
+                >
+                  {v}
+                </button>
+              ))}
+              <DropdownButton
+                label="+"
+                selectedLabel={VA_OPTIONS.find((o) => o.id === av && !VA_COMMON.includes(o.id))?.label}
+              >
+                {VA_OPTIONS.filter((o) => !VA_COMMON.includes(o.id)).map((opt) => (
+                  <DropdownOption
+                    key={opt.id}
+                    label={opt.label}
+                    selected={av === opt.id}
+                    onSelect={() => onAvChange(opt.id)}
+                    onDeselect={() => onAvChange('')}
+                  />
+                ))}
+              </DropdownButton>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -435,11 +476,6 @@ function combineRx(sphere: string, cylinder: string, axis: string): string {
 }
 
 export function RefractionSection({ refraction, onChange }: RefractionSectionProps) {
-  const handleVASelect = (field: keyof RefractionData, value: string) => {
-    const current = refraction[field];
-    onChange({ [field]: current === value ? '' : value });
-  };
-
   // Parse current subjective values
   const odParsed = parseRx(refraction.rxOD);
   const osParsed = parseRx(refraction.rxOS);
@@ -498,7 +534,7 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
         </div>
       </div>
 
-      {/* Rx Finale - copies from subjective by default */}
+      {/* Rx Finale - copies from subjective by default, includes AV */}
       <div className="space-y-3 border-t border-border pt-4">
         <div className="flex items-center justify-between">
           <Label className="text-sm font-medium">Rx Finale</Label>
@@ -519,10 +555,12 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
             cylinder={finalOdParsed.cylinder}
             axis={finalOdParsed.axis}
             add={finalAddOD}
+            av={refraction.avOD}
             onSphereChange={(v) => onChange({ finalRxOD: combineRx(v, finalOdParsed.cylinder, finalOdParsed.axis) })}
             onCylinderChange={(v) => onChange({ finalRxOD: combineRx(finalOdParsed.sphere, v, finalOdParsed.axis) })}
             onAxisChange={(v) => onChange({ finalRxOD: combineRx(finalOdParsed.sphere, finalOdParsed.cylinder, v) })}
             onAddChange={(v) => onChange({ finalAddOD: v })}
+            onAvChange={(v) => onChange({ avOD: v })}
           />
           <RxPicker
             label="OS"
@@ -530,87 +568,32 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
             cylinder={finalOsParsed.cylinder}
             axis={finalOsParsed.axis}
             add={finalAddOS}
+            av={refraction.avOS}
             onSphereChange={(v) => onChange({ finalRxOS: combineRx(v, finalOsParsed.cylinder, finalOsParsed.axis) })}
             onCylinderChange={(v) => onChange({ finalRxOS: combineRx(finalOsParsed.sphere, v, finalOsParsed.axis) })}
             onAxisChange={(v) => onChange({ finalRxOS: combineRx(finalOsParsed.sphere, finalOsParsed.cylinder, v) })}
             onAddChange={(v) => onChange({ finalAddOS: v })}
+            onAvChange={(v) => onChange({ avOS: v })}
           />
-        </div>
-        {!finalDiffersFromSubjective && (
-          <p className="text-xs text-muted-foreground italic">
-            Utilise les valeurs de Rx Subjective par défaut
-          </p>
-        )}
-      </div>
-
-      {/* AV avec Rx finale */}
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">AV avec Rx Finale</Label>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="space-y-1.5">
-            <span className="text-xs text-muted-foreground">OD</span>
-            <div className="flex flex-wrap gap-1">
+          {/* OU AV inline */}
+          <div className="flex items-center gap-2 pl-8">
+            <span className="text-sm font-bold">OU</span>
+            <span className="text-xs text-muted-foreground">AV</span>
+            <div className="flex flex-wrap gap-0.5">
               {VA_COMMON.map((v) => (
-                <QuickSelectButton
+                <button
                   key={v}
-                  label={v}
-                  selected={refraction.avOD === v}
-                  onClick={() => handleVASelect('avOD', v)}
-                />
-              ))}
-              <DropdownButton
-                label="+"
-                selectedLabel={VA_OPTIONS.find((o) => o.id === refraction.avOD && !VA_COMMON.includes(o.id))?.label}
-              >
-                {VA_OPTIONS.filter((o) => !VA_COMMON.includes(o.id)).map((opt) => (
-                  <DropdownOption
-                    key={opt.id}
-                    label={opt.label}
-                    selected={refraction.avOD === opt.id}
-                    onSelect={() => onChange({ avOD: opt.id })}
-                    onDeselect={() => onChange({ avOD: '' })}
-                  />
-                ))}
-              </DropdownButton>
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <span className="text-xs text-muted-foreground">OS</span>
-            <div className="flex flex-wrap gap-1">
-              {VA_COMMON.map((v) => (
-                <QuickSelectButton
-                  key={v}
-                  label={v}
-                  selected={refraction.avOS === v}
-                  onClick={() => handleVASelect('avOS', v)}
-                />
-              ))}
-              <DropdownButton
-                label="+"
-                selectedLabel={VA_OPTIONS.find((o) => o.id === refraction.avOS && !VA_COMMON.includes(o.id))?.label}
-              >
-                {VA_OPTIONS.filter((o) => !VA_COMMON.includes(o.id)).map((opt) => (
-                  <DropdownOption
-                    key={opt.id}
-                    label={opt.label}
-                    selected={refraction.avOS === opt.id}
-                    onSelect={() => onChange({ avOS: opt.id })}
-                    onDeselect={() => onChange({ avOS: '' })}
-                  />
-                ))}
-              </DropdownButton>
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <span className="text-xs text-muted-foreground">OU</span>
-            <div className="flex flex-wrap gap-1">
-              {VA_COMMON.map((v) => (
-                <QuickSelectButton
-                  key={v}
-                  label={v}
-                  selected={refraction.avOU === v}
-                  onClick={() => handleVASelect('avOU', v)}
-                />
+                  type="button"
+                  onClick={() => onChange({ avOU: refraction.avOU === v ? '' : v })}
+                  className={cn(
+                    "h-8 px-1.5 text-xs rounded border",
+                    refraction.avOU === v 
+                      ? "bg-primary text-primary-foreground border-primary" 
+                      : "bg-background border-border hover:bg-muted"
+                  )}
+                >
+                  {v}
+                </button>
               ))}
               <DropdownButton
                 label="+"
@@ -629,7 +612,13 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
             </div>
           </div>
         </div>
+        {!finalDiffersFromSubjective && (
+          <p className="text-xs text-muted-foreground italic">
+            Utilise les valeurs de Rx Subjective par défaut
+          </p>
+        )}
       </div>
+
 
       {/* DP */}
       <div className="space-y-3">
