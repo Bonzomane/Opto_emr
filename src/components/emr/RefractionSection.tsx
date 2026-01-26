@@ -559,20 +559,17 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
     });
   };
 
-  // Format ARN/ARP value: typing "250" becomes "2.50"
-  const formatArnArp = (value: string, sign: '+' | '-'): string => {
-    const digits = value.replace(/[^0-9]/g, '');
+  // Format ARN/ARP value: typing "2" -> "2.", "25" -> "2.5", "250" -> "2.50"
+  const formatArnArp = (digits: string, sign: '+' | '-'): string => {
     if (!digits) return '';
-    // Pad to 3 digits (e.g., "2" -> "200", "25" -> "250")
-    const padded = digits.padEnd(3, '0').slice(0, 3);
-    const whole = padded[0];
-    const decimal = padded.slice(1);
-    return `${sign}${whole}.${decimal}`;
+    if (digits.length === 1) return `${sign}${digits}.`;
+    if (digits.length === 2) return `${sign}${digits[0]}.${digits[1]}`;
+    return `${sign}${digits[0]}.${digits.slice(1, 3)}`;
   };
 
-  // Handle ARN input - auto-format with + prefix
+  // Handle ARN input - format with + prefix
   const handleArnInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/[^0-9]/g, '');
+    const raw = e.target.value.replace(/[^0-9]/g, '').slice(0, 3);
     if (!raw) {
       onChange({ arn: '' });
       return;
@@ -580,9 +577,9 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
     onChange({ arn: formatArnArp(raw, '+') });
   };
 
-  // Handle ARP input - auto-format with - prefix
+  // Handle ARP input - format with - prefix
   const handleArpInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/[^0-9]/g, '');
+    const raw = e.target.value.replace(/[^0-9]/g, '').slice(0, 3);
     if (!raw) {
       onChange({ arp: '' });
       return;
