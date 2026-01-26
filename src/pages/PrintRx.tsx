@@ -69,7 +69,9 @@ export default function PrintRx() {
                   <th className="border border-zinc-300 p-3">Sphère</th>
                   <th className="border border-zinc-300 p-3">Cylindre</th>
                   <th className="border border-zinc-300 p-3">Axe</th>
-                  <th className="border border-zinc-300 p-3">Addition</th>
+                  <th className="border border-zinc-300 p-3">Add</th>
+                  <th className="border border-zinc-300 p-3">ARN</th>
+                  <th className="border border-zinc-300 p-3">ARP</th>
                 </tr>
               </thead>
               <tbody className="text-lg">
@@ -85,6 +87,8 @@ export default function PrintRx() {
                   <td className="border border-zinc-300 p-3">{parseRxParts(refraction.rxOD).cyl || '—'}</td>
                   <td className="border border-zinc-300 p-3">{parseRxParts(refraction.rxOD).axis ? `${parseRxParts(refraction.rxOD).axis}°` : '—'}</td>
                   <td className="border border-zinc-300 p-3">{refraction.addOD || '—'}</td>
+                  <td className="border border-zinc-300 p-3">{refraction.arnOD || '—'}</td>
+                  <td className="border border-zinc-300 p-3">{refraction.arpOD || '—'}</td>
                 </tr>
                 <tr>
                   <td className="border border-zinc-300 p-3 font-bold bg-zinc-50">OS</td>
@@ -98,6 +102,8 @@ export default function PrintRx() {
                   <td className="border border-zinc-300 p-3">{parseRxParts(refraction.rxOS).cyl || '—'}</td>
                   <td className="border border-zinc-300 p-3">{parseRxParts(refraction.rxOS).axis ? `${parseRxParts(refraction.rxOS).axis}°` : '—'}</td>
                   <td className="border border-zinc-300 p-3">{refraction.addOS || '—'}</td>
+                  <td className="border border-zinc-300 p-3">{refraction.arnOS || '—'}</td>
+                  <td className="border border-zinc-300 p-3">{refraction.arpOS || '—'}</td>
                 </tr>
               </tbody>
             </table>

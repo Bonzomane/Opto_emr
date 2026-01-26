@@ -1,5 +1,4 @@
-import { RefractionData } from '@/types/emr';
-import { LABELS } from '@/constants/labels';
+import { RefractionData, CYCLO_AGENTS } from '@/types/emr';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DropdownButton, DropdownOption } from './DropdownButton';
@@ -308,12 +307,16 @@ function RxPicker({
   cylinder,
   axis,
   add,
+  arn,
+  arp,
   av,
   avLabel = 'AV',
   onSphereChange,
   onCylinderChange,
   onAxisChange,
   onAddChange,
+  onArnChange,
+  onArpChange,
   onAvChange,
 }: {
   label: string;
@@ -321,17 +324,23 @@ function RxPicker({
   cylinder: string;
   axis: string;
   add: string;
+  arn?: string;
+  arp?: string;
   av?: string;
   avLabel?: string;
   onSphereChange: (v: string) => void;
   onCylinderChange: (v: string) => void;
   onAxisChange: (v: string) => void;
   onAddChange: (v: string) => void;
+  onArnChange?: (v: string) => void;
+  onArpChange?: (v: string) => void;
   onAvChange?: (v: string) => void;
 }) {
   const [sphSign, setSphSign] = useState<'+' | '-'>(() => sphere.includes('+') ? '+' : '-');
   const [cylSign, setCylSign] = useState<'+' | '-'>(() => cylinder.includes('+') ? '+' : '-');
   const [addSign, setAddSign] = useState<'+' | '-'>(() => add.includes('-') ? '-' : '+');
+  const [arnSign, setArnSign] = useState<'+' | '-'>(() => arn?.includes('-') ? '-' : '+');
+  const [arpSign, setArpSign] = useState<'+' | '-'>(() => arp?.includes('-') ? '-' : '+');
 
   const handleSphereChange = (v: string) => {
     onSphereChange(v);
@@ -353,6 +362,14 @@ function RxPicker({
 
   const handleAddChange = (v: string) => {
     onAddChange(v);
+  };
+
+  const handleArnChange = (v: string) => {
+    onArnChange?.(v);
+  };
+
+  const handleArpChange = (v: string) => {
+    onArpChange?.(v);
   };
 
   return (
@@ -414,6 +431,44 @@ function RxPicker({
           }}
           placeholder="0.00"
         />
+        {/* ARN column - optional */}
+        {onArnChange && (
+          <RxField
+            label="ARN"
+            value={arn || ''}
+            onChange={handleArnChange}
+            fieldType="power"
+            sign={arnSign}
+            onSignToggle={() => {
+              const newSign = arnSign === '-' ? '+' : '-';
+              setArnSign(newSign);
+              if (arn) {
+                const digits = arn.replace(/[^0-9.]/g, '');
+                onArnChange(newSign + digits);
+              }
+            }}
+            placeholder="0.00"
+          />
+        )}
+        {/* ARP column - optional */}
+        {onArpChange && (
+          <RxField
+            label="ARP"
+            value={arp || ''}
+            onChange={handleArpChange}
+            fieldType="power"
+            sign={arpSign}
+            onSignToggle={() => {
+              const newSign = arpSign === '-' ? '+' : '-';
+              setArpSign(newSign);
+              if (arp) {
+                const digits = arp.replace(/[^0-9.]/g, '');
+                onArpChange(newSign + digits);
+              }
+            }}
+            placeholder="0.00"
+          />
+        )}
         {/* AV column - optional */}
         {onAvChange && (
           <div className="flex items-center gap-1">
@@ -458,7 +513,7 @@ function RxPicker({
 
 // Parse Rx string like "-1.25 / -0.50 x 180" into parts
 function parseRx(rx: string): { sphere: string; cylinder: string; axis: string } {
-  const parts = rx.split(/[/x]/).map(p => p.trim());
+  const parts = rx.split(/[\/x]/).map(p => p.trim());
   return {
     sphere: parts[0] || '',
     cylinder: parts[1] || '',
@@ -488,11 +543,17 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
   const finalOsParsed = parseRx(refraction.finalRxOS || refraction.rxOS);
   const finalAddOD = refraction.finalAddOD || refraction.addOD;
   const finalAddOS = refraction.finalAddOS || refraction.addOS;
+  const finalArnOD = refraction.finalArnOD || refraction.arnOD;
+  const finalArnOS = refraction.finalArnOS || refraction.arnOS;
+  const finalArpOD = refraction.finalArpOD || refraction.arpOD;
+  const finalArpOS = refraction.finalArpOS || refraction.arpOS;
 
   // Check if final differs from subjective
-  const finalDiffersFromSubjective = 
-    refraction.finalRxOD !== '' || refraction.finalRxOS !== '' || 
-    refraction.finalAddOD !== '' || refraction.finalAddOS !== '';
+  const finalDiffersFromSubjective =
+    refraction.finalRxOD !== '' || refraction.finalRxOS !== '' ||
+    refraction.finalAddOD !== '' || refraction.finalAddOS !== '' ||
+    refraction.finalArnOD !== '' || refraction.finalArnOS !== '' ||
+    refraction.finalArpOD !== '' || refraction.finalArpOS !== '';
 
   // Copy subjective to final
   const copySubjectiveToFinal = () => {
@@ -501,6 +562,10 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
       finalRxOS: refraction.rxOS,
       finalAddOD: refraction.addOD,
       finalAddOS: refraction.addOS,
+      finalArnOD: refraction.arnOD,
+      finalArnOS: refraction.arnOS,
+      finalArpOD: refraction.arpOD,
+      finalArpOS: refraction.arpOS,
     });
   };
 
@@ -518,11 +583,15 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
             cylinder={odParsed.cylinder}
             axis={odParsed.axis}
             add={refraction.addOD}
+            arn={refraction.arnOD}
+            arp={refraction.arpOD}
             av={refraction.subjAvOD}
             onSphereChange={(v) => onChange({ rxOD: combineRx(v, odParsed.cylinder, odParsed.axis) })}
             onCylinderChange={(v) => onChange({ rxOD: combineRx(odParsed.sphere, v, odParsed.axis) })}
             onAxisChange={(v) => onChange({ rxOD: combineRx(odParsed.sphere, odParsed.cylinder, v) })}
             onAddChange={(v) => onChange({ addOD: v })}
+            onArnChange={(v) => onChange({ arnOD: v })}
+            onArpChange={(v) => onChange({ arpOD: v })}
             onAvChange={(v) => onChange({ subjAvOD: v })}
           />
           <RxPicker
@@ -531,11 +600,15 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
             cylinder={osParsed.cylinder}
             axis={osParsed.axis}
             add={refraction.addOS}
+            arn={refraction.arnOS}
+            arp={refraction.arpOS}
             av={refraction.subjAvOS}
             onSphereChange={(v) => onChange({ rxOS: combineRx(v, osParsed.cylinder, osParsed.axis) })}
             onCylinderChange={(v) => onChange({ rxOS: combineRx(osParsed.sphere, v, osParsed.axis) })}
             onAxisChange={(v) => onChange({ rxOS: combineRx(osParsed.sphere, osParsed.cylinder, v) })}
             onAddChange={(v) => onChange({ addOS: v })}
+            onArnChange={(v) => onChange({ arnOS: v })}
+            onArpChange={(v) => onChange({ arpOS: v })}
             onAvChange={(v) => onChange({ subjAvOS: v })}
           />
           {/* OU AV inline */}
@@ -598,12 +671,16 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
             cylinder={finalOdParsed.cylinder}
             axis={finalOdParsed.axis}
             add={finalAddOD}
+            arn={finalArnOD}
+            arp={finalArpOD}
             av={refraction.avOD}
             avLabel="MAV"
             onSphereChange={(v) => onChange({ finalRxOD: combineRx(v, finalOdParsed.cylinder, finalOdParsed.axis) })}
             onCylinderChange={(v) => onChange({ finalRxOD: combineRx(finalOdParsed.sphere, v, finalOdParsed.axis) })}
             onAxisChange={(v) => onChange({ finalRxOD: combineRx(finalOdParsed.sphere, finalOdParsed.cylinder, v) })}
             onAddChange={(v) => onChange({ finalAddOD: v })}
+            onArnChange={(v) => onChange({ finalArnOD: v })}
+            onArpChange={(v) => onChange({ finalArpOD: v })}
             onAvChange={(v) => onChange({ avOD: v })}
           />
           <RxPicker
@@ -612,12 +689,16 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
             cylinder={finalOsParsed.cylinder}
             axis={finalOsParsed.axis}
             add={finalAddOS}
+            arn={finalArnOS}
+            arp={finalArpOS}
             av={refraction.avOS}
             avLabel="MAV"
             onSphereChange={(v) => onChange({ finalRxOS: combineRx(v, finalOsParsed.cylinder, finalOsParsed.axis) })}
             onCylinderChange={(v) => onChange({ finalRxOS: combineRx(finalOsParsed.sphere, v, finalOsParsed.axis) })}
             onAxisChange={(v) => onChange({ finalRxOS: combineRx(finalOsParsed.sphere, finalOsParsed.cylinder, v) })}
             onAddChange={(v) => onChange({ finalAddOS: v })}
+            onArnChange={(v) => onChange({ finalArnOS: v })}
+            onArpChange={(v) => onChange({ finalArpOS: v })}
             onAvChange={(v) => onChange({ avOS: v })}
           />
           {/* OU MAV inline */}
@@ -709,7 +790,7 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
               <div>
                 <Label className="text-xs text-muted-foreground">Agent</Label>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {LABELS.agents.cyclo.map((agent) => (
+                  {CYCLO_AGENTS.map((agent) => (
                     <QuickSelectButton
                       key={agent}
                       label={agent.split(' ')[0]}
@@ -726,11 +807,15 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
                   cylinder={cycloOdParsed.cylinder}
                   axis={cycloOdParsed.axis}
                   add={refraction.cycloAddOD}
+                  arn={refraction.cycloArnOD}
+                  arp={refraction.cycloArpOD}
                   av={refraction.cycloAvOD}
                   onSphereChange={(v) => onChange({ cycloRxOD: combineRx(v, cycloOdParsed.cylinder, cycloOdParsed.axis) })}
                   onCylinderChange={(v) => onChange({ cycloRxOD: combineRx(cycloOdParsed.sphere, v, cycloOdParsed.axis) })}
                   onAxisChange={(v) => onChange({ cycloRxOD: combineRx(cycloOdParsed.sphere, cycloOdParsed.cylinder, v) })}
                   onAddChange={(v) => onChange({ cycloAddOD: v })}
+                  onArnChange={(v) => onChange({ cycloArnOD: v })}
+                  onArpChange={(v) => onChange({ cycloArpOD: v })}
                   onAvChange={(v) => onChange({ cycloAvOD: v })}
                 />
                 <RxPicker
@@ -739,11 +824,15 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
                   cylinder={cycloOsParsed.cylinder}
                   axis={cycloOsParsed.axis}
                   add={refraction.cycloAddOS}
+                  arn={refraction.cycloArnOS}
+                  arp={refraction.cycloArpOS}
                   av={refraction.cycloAvOS}
                   onSphereChange={(v) => onChange({ cycloRxOS: combineRx(v, cycloOsParsed.cylinder, cycloOsParsed.axis) })}
                   onCylinderChange={(v) => onChange({ cycloRxOS: combineRx(cycloOsParsed.sphere, v, cycloOsParsed.axis) })}
                   onAxisChange={(v) => onChange({ cycloRxOS: combineRx(cycloOsParsed.sphere, cycloOsParsed.cylinder, v) })}
                   onAddChange={(v) => onChange({ cycloAddOS: v })}
+                  onArnChange={(v) => onChange({ cycloArnOS: v })}
+                  onArpChange={(v) => onChange({ cycloArpOS: v })}
                   onAvChange={(v) => onChange({ cycloAvOS: v })}
                 />
                 {/* OU AV inline */}
