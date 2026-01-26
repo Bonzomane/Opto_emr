@@ -543,17 +543,11 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
   const finalOsParsed = parseRx(refraction.finalRxOS || refraction.rxOS);
   const finalAddOD = refraction.finalAddOD || refraction.addOD;
   const finalAddOS = refraction.finalAddOS || refraction.addOS;
-  const finalArnOD = refraction.finalArnOD || refraction.arnOD;
-  const finalArnOS = refraction.finalArnOS || refraction.arnOS;
-  const finalArpOD = refraction.finalArpOD || refraction.arpOD;
-  const finalArpOS = refraction.finalArpOS || refraction.arpOS;
 
   // Check if final differs from subjective
   const finalDiffersFromSubjective =
     refraction.finalRxOD !== '' || refraction.finalRxOS !== '' ||
-    refraction.finalAddOD !== '' || refraction.finalAddOS !== '' ||
-    refraction.finalArnOD !== '' || refraction.finalArnOS !== '' ||
-    refraction.finalArpOD !== '' || refraction.finalArpOS !== '';
+    refraction.finalAddOD !== '' || refraction.finalAddOS !== '';
 
   // Copy subjective to final
   const copySubjectiveToFinal = () => {
@@ -562,11 +556,38 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
       finalRxOS: refraction.rxOS,
       finalAddOD: refraction.addOD,
       finalAddOS: refraction.addOS,
-      finalArnOD: refraction.arnOD,
-      finalArnOS: refraction.arnOS,
-      finalArpOD: refraction.arpOD,
-      finalArpOS: refraction.arpOS,
     });
+  };
+
+  // Format ARN/ARP value: typing "250" becomes "2.50"
+  const formatArnArp = (value: string, sign: '+' | '-'): string => {
+    const digits = value.replace(/[^0-9]/g, '');
+    if (!digits) return '';
+    // Pad to 3 digits (e.g., "2" -> "200", "25" -> "250")
+    const padded = digits.padEnd(3, '0').slice(0, 3);
+    const whole = padded[0];
+    const decimal = padded.slice(1);
+    return `${sign}${whole}.${decimal}`;
+  };
+
+  // Handle ARN input - auto-format with + prefix
+  const handleArnInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/[^0-9]/g, '');
+    if (!raw) {
+      onChange({ arn: '' });
+      return;
+    }
+    onChange({ arn: formatArnArp(raw, '+') });
+  };
+
+  // Handle ARP input - auto-format with - prefix
+  const handleArpInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/[^0-9]/g, '');
+    if (!raw) {
+      onChange({ arp: '' });
+      return;
+    }
+    onChange({ arp: formatArnArp(raw, '-') });
   };
 
   return (
@@ -639,55 +660,29 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
               </DropdownButton>
             </div>
           </div>
-          {/* ARN / ARP row - separate from main Rx inputs */}
+          {/* ARN / ARP row - binocular inputs with auto-formatting */}
           <div className="flex items-center gap-6 pl-8 pt-2 border-t border-border/50">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground font-medium">ARN</span>
-              <div className="flex gap-2">
+              <span className="text-xs font-medium text-green-600">ARN</span>
+              <div className="relative">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-green-600 font-bold pointer-events-none">+</span>
                 <Input
-                  value={refraction.arnOD}
-                  onChange={(e) => {
-                    let val = e.target.value;
-                    if (val && !val.startsWith('+') && !val.startsWith('-')) val = '+' + val;
-                    onChange({ arnOD: val });
-                  }}
-                  placeholder="+0.00"
-                  className="w-20 text-xs"
-                />
-                <Input
-                  value={refraction.arnOS}
-                  onChange={(e) => {
-                    let val = e.target.value;
-                    if (val && !val.startsWith('+') && !val.startsWith('-')) val = '+' + val;
-                    onChange({ arnOS: val });
-                  }}
-                  placeholder="+0.00"
-                  className="w-20 text-xs"
+                  value={refraction.arn ? refraction.arn.replace(/^[+-]/, '') : ''}
+                  onChange={handleArnInput}
+                  placeholder="0.00"
+                  className="w-20 text-xs pl-5 text-green-700"
                 />
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground font-medium">ARP</span>
-              <div className="flex gap-2">
+              <span className="text-xs font-medium text-red-600">ARP</span>
+              <div className="relative">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-red-600 font-bold pointer-events-none">−</span>
                 <Input
-                  value={refraction.arpOD}
-                  onChange={(e) => {
-                    let val = e.target.value;
-                    if (val && !val.startsWith('+') && !val.startsWith('-')) val = '-' + val;
-                    onChange({ arpOD: val });
-                  }}
-                  placeholder="-0.00"
-                  className="w-20 text-xs"
-                />
-                <Input
-                  value={refraction.arpOS}
-                  onChange={(e) => {
-                    let val = e.target.value;
-                    if (val && !val.startsWith('+') && !val.startsWith('-')) val = '-' + val;
-                    onChange({ arpOS: val });
-                  }}
-                  placeholder="-0.00"
-                  className="w-20 text-xs"
+                  value={refraction.arp ? refraction.arp.replace(/^[+-]/, '') : ''}
+                  onChange={handleArpInput}
+                  placeholder="0.00"
+                  className="w-20 text-xs pl-5 text-red-700"
                 />
               </div>
             </div>

@@ -137,10 +137,8 @@ export interface RefractionData {
   rxOS: string;
   addOD: string;  // Add (standard addition)
   addOS: string;
-  arnOD: string;  // ARN (Addition pour lecture/près - Near)
-  arnOS: string;
-  arpOD: string;  // ARP (Addition pour progressif - Progressive)
-  arpOS: string;
+  arn: string;  // ARN (binocular, format: +X.XX)
+  arp: string;  // ARP (binocular, format: -X.XX)
   subjAvOD: string;
   subjAvOS: string;
   subjAvOU: string;
@@ -150,10 +148,6 @@ export interface RefractionData {
   finalRxOS: string;
   finalAddOD: string;
   finalAddOS: string;
-  finalArnOD: string;
-  finalArnOS: string;
-  finalArpOD: string;
-  finalArpOS: string;
 
   // MAV (Meilleure Acuité Visuelle) avec Rx finale
   avOD: string;
@@ -170,10 +164,6 @@ export interface RefractionData {
   cycloRxOS: string;
   cycloAddOD: string;
   cycloAddOS: string;
-  cycloArnOD: string;
-  cycloArnOS: string;
-  cycloArpOD: string;
-  cycloArpOS: string;
   cycloAvOD: string;
   cycloAvOS: string;
   cycloAvOU: string;
@@ -645,10 +635,8 @@ export function createEmptyPatientSession(): PatientSession {
       rxOS: '',
       addOD: '',
       addOS: '',
-      arnOD: '',
-      arnOS: '',
-      arpOD: '',
-      arpOS: '',
+      arn: '',
+      arp: '',
       subjAvOD: '',
       subjAvOS: '',
       subjAvOU: '',
@@ -656,10 +644,6 @@ export function createEmptyPatientSession(): PatientSession {
       finalRxOS: '',
       finalAddOD: '',
       finalAddOS: '',
-      finalArnOD: '',
-      finalArnOS: '',
-      finalArpOD: '',
-      finalArpOS: '',
       avOD: '',
       avOS: '',
       avOU: '',
@@ -670,10 +654,6 @@ export function createEmptyPatientSession(): PatientSession {
       cycloRxOS: '',
       cycloAddOD: '',
       cycloAddOS: '',
-      cycloArnOD: '',
-      cycloArnOS: '',
-      cycloArpOD: '',
-      cycloArpOS: '',
       cycloAvOD: '',
       cycloAvOS: '',
       cycloAvOU: '',
