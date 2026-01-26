@@ -262,6 +262,18 @@ export function RefractionDisplay({ rx }: { rx: RefractionData }) {
               {rx.subjAvOU && <span> OU: {rx.subjAvOU}</span>}
             </DataRow>
           )}
+          {(rx.arnOD || rx.arnOS || rx.arpOD || rx.arpOS) && (
+            <DataRow label="ARN/ARP">
+              <div className="flex gap-3">
+                {(rx.arnOD || rx.arnOS) && (
+                  <span>ARN: {rx.arnOD && `OD ${rx.arnOD}`}{rx.arnOD && rx.arnOS && ' / '}{rx.arnOS && `OS ${rx.arnOS}`}</span>
+                )}
+                {(rx.arpOD || rx.arpOS) && (
+                  <span>ARP: {rx.arpOD && `OD ${rx.arpOD}`}{rx.arpOD && rx.arpOS && ' / '}{rx.arpOS && `OS ${rx.arpOS}`}</span>
+                )}
+              </div>
+            </DataRow>
+          )}
         </div>
       )}
 
