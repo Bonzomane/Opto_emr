@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from 'react';
 import { AnteriorSegment } from '@/types/emr';
 import { Label } from '@/components/ui/label';
 import { CollapsibleNotes } from './CollapsibleNotes';
@@ -7,6 +6,8 @@ import { cn } from '@/lib/utils';
 import { QuickSelectButton } from './QuickSelectButton';
 import { hasCsvValue, parseCsv, toggleCsvValue } from '@/lib/selection';
 import { SectionHeader } from './SectionHeader';
+import { GradedButton } from './GradedButton';
+import { LateralizedInput } from './LateralizedInput';
 
 interface AnteriorSegmentSectionProps {
   anteriorSegment: AnteriorSegment;
@@ -14,83 +15,6 @@ interface AnteriorSegmentSectionProps {
 }
 
  
-
-// Graded button with scrollable grade picker
-const GRADES = ['Tr', '1+', '2+', '3+', '4+'];
-
-function GradedBtn({ 
-  label, 
-  currentGrade, 
-  onGradeChange 
-}: { 
-  label: string; 
-  currentGrade: string | null; 
-  onGradeChange: (grade: string | null) => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [isOpen]);
-
-  return (
-    <div ref={containerRef} className="relative">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          'px-2 py-1.5 text-xs rounded border transition-colors min-w-[40px]',
-          currentGrade
-            ? 'bg-primary text-primary-foreground border-primary'
-            : 'bg-muted/50 border-border text-foreground hover:bg-muted'
-        )}
-      >
-        {currentGrade ? `${label} ${currentGrade}` : label}
-      </button>
-      
-      {isOpen && (
-        <div 
-          className="absolute top-full left-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-50 overflow-hidden"
-          style={{ boxShadow: '0 8px 12px rgba(0,0,0,0.25)' }}
-        >
-          <div className="max-h-32 overflow-y-auto">
-            <button
-              type="button"
-              onClick={() => { onGradeChange(null); setIsOpen(false); }}
-              className={cn(
-                'w-full px-3 py-1.5 text-xs text-left hover:bg-muted transition-colors',
-                !currentGrade && 'bg-muted'
-              )}
-            >
-              —
-            </button>
-            {GRADES.map((grade) => (
-              <button
-                key={grade}
-                type="button"
-                onClick={() => { onGradeChange(grade); setIsOpen(false); }}
-                className={cn(
-                  'w-full px-3 py-1.5 text-xs text-left hover:bg-muted transition-colors',
-                  currentGrade === grade && 'bg-primary text-primary-foreground'
-                )}
-              >
-                {grade}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // Cristallin types with grades
 const CRISTALLIN_GRADED = ['SN', 'SC', 'SCP', 'OCP'];
@@ -247,7 +171,7 @@ export function AnteriorSegmentSection({ anteriorSegment, onChange }: AnteriorSe
           onClick={() => handleToggle(key, 'IOL')} 
         />
         {CRISTALLIN_GRADED.map((type) => (
-          <GradedBtn
+          <GradedButton
             key={type}
             label={type}
             currentGrade={getGradedValue(key, type)}
@@ -292,50 +216,27 @@ export function AnteriorSegmentSection({ anteriorSegment, onChange }: AnteriorSe
       <div className="space-y-4">
         {/* Regular fields */}
         {FIELDS.map(({ baseKey, label, common, options }) => (
-          <div key={baseKey} className="space-y-2">
-            <Label className="text-xs font-medium">{label}</Label>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground">OD</span>
-                {renderEyeField(baseKey, 'OD', common, options)}
-              </div>
-              <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground">OS</span>
-                {renderEyeField(baseKey, 'OS', common, options)}
-              </div>
-            </div>
-          </div>
+          <LateralizedInput
+            key={baseKey}
+            label={label}
+            od={renderEyeField(baseKey, 'OD', common, options)}
+            os={renderEyeField(baseKey, 'OS', common, options)}
+          />
         ))}
 
         {/* Cristallin - special handling */}
-        <div className="space-y-2">
-          <Label className="text-xs font-medium">Cristallin</Label>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground">OD</span>
-              {renderCristallinField('OD')}
-            </div>
-            <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground">OS</span>
-              {renderCristallinField('OS')}
-            </div>
-          </div>
-        </div>
+        <LateralizedInput
+          label="Cristallin"
+          od={renderCristallinField('OD')}
+          os={renderCristallinField('OS')}
+        />
 
         {/* Angles - Van Herick */}
-        <div className="space-y-2">
-          <Label className="text-xs font-medium">Angles</Label>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground">OD</span>
-              {renderAnglesField('OD')}
-            </div>
-            <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground">OS</span>
-              {renderAnglesField('OS')}
-            </div>
-          </div>
-        </div>
+        <LateralizedInput
+          label="Angles"
+          od={renderAnglesField('OD')}
+          os={renderAnglesField('OS')}
+        />
       </div>
 
       <CollapsibleNotes

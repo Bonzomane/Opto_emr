@@ -197,10 +197,7 @@ export default function PrintPreview() {
                 <Section title="Réfraction Obj.">
                   {objectiveRefraction ? <ObjectiveRefractionDisplay obj={objectiveRefraction} /> : <Empty />}
                 </Section>
-                <Section title="Réfraction Subj. (MAV)">
-                  {refraction ? <RefractionDisplay rx={refraction} /> : <Empty />}
-                </Section>
-                <Section title="Rx finale">
+                <Section title="Réfraction">
                   {refraction ? <RefractionDisplay rx={refraction} /> : <Empty />}
                 </Section>
               </div>
@@ -223,31 +220,28 @@ export default function PrintPreview() {
             
             <div className="grid grid-cols-3 gap-x-6">
               {/* Diagnosis */}
-              <div>
-                <h3 className="text-[10px] font-bold uppercase text-zinc-500 border-b border-zinc-200 pb-0.5 mb-1">Diagnostic</h3>
+              <Section title="Diagnostic">
                 {assessmentPlan?.diagnosis ? (
                   <p className="text-[10px] whitespace-pre-line">{assessmentPlan.diagnosis}</p>
                 ) : <Empty />}
-            </div>
+              </Section>
 
               {/* Plan */}
-              <div>
-                <h3 className="text-[10px] font-bold uppercase text-zinc-500 border-b border-zinc-200 pb-0.5 mb-1">Plan</h3>
+              <Section title="Plan">
                 {assessmentPlan?.plan ? (
                   <p className="text-[10px] whitespace-pre-line">{assessmentPlan.plan}</p>
                 ) : <Empty />}
-              </div>
+              </Section>
 
               {/* Next Visit */}
-              <div>
-                <h3 className="text-[10px] font-bold uppercase text-zinc-500 border-b border-zinc-200 pb-0.5 mb-1">Suivi</h3>
+              <Section title="Suivi">
                 {assessmentPlan?.nextVisit ? (
                   <p className="text-[10px]">{assessmentPlan.nextVisit}</p>
                 ) : <Empty />}
                 {assessmentPlan?.notes && <Note text={assessmentPlan.notes} />}
-              </div>
-              </div>
+              </Section>
             </div>
+          </div>
 
           {/* Footer */}
           <div className="print-footer mt-8 pt-4 border-t border-zinc-200 flex justify-end">

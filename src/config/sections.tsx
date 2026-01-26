@@ -1,5 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ComponentType } from 'react';
-import { VisitType, PatientSession } from '@/types/emr';
+import { 
+  VisitType, 
+  PatientSession,
+  PatientInfo,
+  ReasonForVisit,
+  LastExamInfo,
+  CurrentRx,
+  VisualNeeds,
+  Complaint,
+  PersonalOcularHealth,
+  PersonalGeneralHealth,
+  FamilyOcularHealth,
+  FamilyGeneralHealth,
+  PreliminaryTests
+} from '@/types/emr';
 import {
   FileText,
   Glasses,
@@ -73,47 +88,47 @@ export interface CaseHistorySubSection {
 }
 
 // Wrapper components to normalize the prop interface
-const PatientInfoWrapper = ({ data, onChange, session }: { data: any; onChange: (u: any) => void; session: PatientSession }) => (
+const PatientInfoWrapper = ({ data, onChange, session }: { data: PatientInfo; onChange: (u: Partial<PatientInfo>) => void; session: PatientSession }) => (
   <PatientInfoSection patientInfo={data} onChange={onChange} session={session} />
 );
 
-const ReasonForVisitWrapper = ({ data, onChange, session }: { data: any; onChange: (u: any) => void; session: PatientSession }) => (
+const ReasonForVisitWrapper = ({ data, onChange, session }: { data: ReasonForVisit; onChange: (u: Partial<ReasonForVisit>) => void; session: PatientSession }) => (
   <ReasonForVisitSection reasonForVisit={data} onChange={onChange} session={session} />
 );
 
-const LastExamWrapper = ({ data, onChange, session }: { data: any; onChange: (u: any) => void; session: PatientSession }) => (
+const LastExamWrapper = ({ data, onChange, session }: { data: LastExamInfo; onChange: (u: Partial<LastExamInfo>) => void; session: PatientSession }) => (
   <LastExamSection lastExamInfo={data} onChange={onChange} session={session} />
 );
 
-const CurrentRxWrapper = ({ data, onChange, session }: { data: any; onChange: (u: any) => void; session: PatientSession }) => (
+const CurrentRxWrapper = ({ data, onChange, session }: { data: CurrentRx; onChange: (u: Partial<CurrentRx>) => void; session: PatientSession }) => (
   <CurrentRxSection currentRx={data} onChange={onChange} session={session} />
 );
 
-const VisualNeedsWrapper = ({ data, onChange, session }: { data: any; onChange: (u: any) => void; session: PatientSession }) => (
+const VisualNeedsWrapper = ({ data, onChange, session }: { data: VisualNeeds; onChange: (u: Partial<VisualNeeds>) => void; session: PatientSession }) => (
   <VisualNeedsSection visualNeeds={data} onChange={onChange} session={session} />
 );
 
-const ComplaintWrapper = ({ data, onChange, session }: { data: any; onChange: (u: any) => void; session: PatientSession }) => (
+const ComplaintWrapper = ({ data, onChange, session }: { data: Complaint; onChange: (u: Partial<Complaint>) => void; session: PatientSession }) => (
   <ComplaintSection complaint={data} onChange={onChange} session={session} />
 );
 
-const PersonalOcularHealthWrapper = ({ data, onChange, session }: { data: any; onChange: (u: any) => void; session: PatientSession }) => (
+const PersonalOcularHealthWrapper = ({ data, onChange, session }: { data: PersonalOcularHealth; onChange: (u: Partial<PersonalOcularHealth>) => void; session: PatientSession }) => (
   <PersonalOcularHealthSection personalOcularHealth={data} onChange={onChange} session={session} />
 );
 
-const PersonalGeneralHealthWrapper = ({ data, onChange, session }: { data: any; onChange: (u: any) => void; session: PatientSession }) => (
+const PersonalGeneralHealthWrapper = ({ data, onChange, session }: { data: PersonalGeneralHealth; onChange: (u: Partial<PersonalGeneralHealth>) => void; session: PatientSession }) => (
   <PersonalGeneralHealthSection personalGeneralHealth={data} onChange={onChange} session={session} />
 );
 
-const FamilyOcularHealthWrapper = ({ data, onChange, session }: { data: any; onChange: (u: any) => void; session: PatientSession }) => (
+const FamilyOcularHealthWrapper = ({ data, onChange, session }: { data: FamilyOcularHealth; onChange: (u: Partial<FamilyOcularHealth>) => void; session: PatientSession }) => (
   <FamilyOcularHealthSection familyOcularHealth={data} onChange={onChange} session={session} />
 );
 
-const FamilyGeneralHealthWrapper = ({ data, onChange, session }: { data: any; onChange: (u: any) => void; session: PatientSession }) => (
+const FamilyGeneralHealthWrapper = ({ data, onChange, session }: { data: FamilyGeneralHealth; onChange: (u: Partial<FamilyGeneralHealth>) => void; session: PatientSession }) => (
   <FamilyGeneralHealthSection familyGeneralHealth={data} onChange={onChange} session={session} />
 );
 
-const PreliminaryTestsWrapper = ({ data, onChange, session }: { data: any; onChange: (u: any) => void; session: PatientSession }) => (
+const PreliminaryTestsWrapper = ({ data, onChange, session }: { data: PreliminaryTests; onChange: (u: Partial<PreliminaryTests>) => void; session: PatientSession }) => (
   <PreliminaryTestsSection preliminaryTests={data} onChange={onChange} session={session} />
 );
 

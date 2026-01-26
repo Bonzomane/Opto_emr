@@ -48,34 +48,6 @@ export interface CurrentRx {
   notes: string;
 }
 
-// Labels for parsing stored Rx data in print preview
-export const RX_FIELD_LABELS: Record<string, Record<string, string>> = {
-  type: {
-    'sv-vl': 'SV VL',
-    'sv-vp': 'SV VP',
-    'progressif': 'Progressif',
-    'degressif': 'Dégressif',
-    'ctrl-myopie': 'Ctrl. Myopie',
-    'lc': 'LC',
-  },
-  visionVL: {
-    'bonne': 'Bonne',
-    'moyenne': 'Moyenne',
-    'mauvaise': 'Mauvaise',
-  },
-  visionVP: {
-    'bonne': 'Bonne',
-    'moyenne': 'Moyenne',
-    'mauvaise': 'Mauvaise',
-  },
-  condition: {
-    'bon': 'Bon état',
-    'use': 'Usé',
-    'raye': 'Rayé',
-    'casse': 'Cassé',
-  },
-};
-
 export interface Complaint {
   chiefComplaint: string;
   symptoms: string[]; // Using tristate system
@@ -93,28 +65,6 @@ export interface VisualNeeds {
 // ============================================
 
 // ============================================
-// ACUITÉ VISUELLE
-// ============================================
-
-export interface VisualAcuityData {
-  // Sans correction
-  scOD: string;
-  scOS: string;
-  scOU: string;
-  
-  // Avec correction (lunettes habituelles)
-  avecOD: string;
-  avecOS: string;
-  avecOU: string;
-  
-  // Trou sténopéique
-  phOD: string;
-  phOS: string;
-  
-  notes: string;
-}
-
-// ============================================
 // RÉFRACTION OBJECTIVE
 // ============================================
 
@@ -124,8 +74,6 @@ export interface ObjectiveRefraction {
   rxOS: string;
   notes: string;
 }
-
-export const OBJECTIVE_REFRACTION_METHODS = ['Autoréfracteur', 'Skiascopie'] as const;
 
 // ============================================
 // RÉFRACTION
@@ -196,9 +144,6 @@ export interface Drops {
   notes: string;
 }
 
-export const DIL_AGENTS = ['Tropicamide 1%', 'Phényléphrine 2.5%', 'Cyclopentolate 1%', 'Mydriacyl', 'Paremyd'] as const;
-export const CYCLO_AGENTS = ['Cyclopentolate 1%', 'Tropicamide 1%', 'Atropine 1%'] as const;
-
 // ============================================
 // SEGMENT ANTÉRIEUR
 // ============================================
@@ -260,21 +205,6 @@ export interface VisualFields {
   notes: string;
 }
 
-export const VF_TYPES = ['Automatisé', 'Confrontation'] as const;
-export const VF_MACHINES = ['Humphrey', 'FDT', 'Octopus'] as const;
-export const VF_RESULTS = [
-  'Normal',
-  'Fiable et complet',
-  'Pas fiable',
-  'Défaut non-spécifique',
-  'Défaut non-répétable',
-  'Arciforme',
-  'Scotome central',
-  'Hémianopsie',
-  'Quadranopsie',
-  'Rétrécissement concentrique',
-] as const;
-
 // ============================================
 // OCT
 // ============================================
@@ -286,19 +216,6 @@ export interface OCT {
   resultOS: string;
   notes: string;
 }
-
-export const OCT_TYPES = ['Macula', 'RNFL', 'Papille', 'Segment Ant.'] as const;
-export const OCT_MACHINES = ['Zeiss Cirrus', 'Topcon', 'Heidelberg', 'Optovue'] as const;
-export const OCT_RESULTS = [
-  'Normal',
-  'Amincissement',
-  'Épaississement',
-  'Drusen',
-  'Œdème',
-  'Membrane',
-  'Trou',
-  'Atrophie',
-] as const;
 
 // ============================================
 // PRESSION INTRAOCULAIRE
@@ -399,43 +316,6 @@ export interface BinocularVision {
   notes: string;
 }
 
-// Labels for parsing stored visual needs data
-export const VISUAL_NEEDS_LABELS: Record<string, Record<string, string>> = {
-  travail: {
-    'bureau': 'Bureau',
-    'exterieur': 'Extérieur',
-    'conduite': 'Conduite',
-    'precision': 'Travail de précision',
-    'ecrans': 'Multi-écrans',
-  },
-  ecran: {
-    '0-2h': '0-2h/jour',
-    '2-4h': '2-4h/jour',
-    '4-8h': '4-8h/jour',
-    '8h+': '8h+/jour',
-  },
-  conduite: {
-    'jour': 'Jour',
-    'nuit': 'Nuit',
-    'les-deux': 'Jour + Nuit',
-    'non': 'Non',
-  },
-  loisirs: {
-    'lecture': 'Lecture',
-    'sports': 'Sports',
-    'bricolage': 'Bricolage',
-    'couture': 'Couture',
-    'musique': 'Musique',
-    'jardinage': 'Jardinage',
-  },
-  distance: {
-    'vl': 'Vision de loin',
-    'vp': 'Vision de près',
-    'vi': 'Vision intermédiaire',
-    'toutes': 'Toutes distances',
-  },
-};
-
 export interface PersonalOcularHealth {
   conditions: string[];
   surgeries: string[];
@@ -474,7 +354,6 @@ export interface PatientSession {
   familyGeneralHealth: FamilyGeneralHealth;
   preliminaryTests: PreliminaryTests;
   binocularVision: BinocularVision;
-  visualAcuity: VisualAcuityData;
   objectiveRefraction: ObjectiveRefraction;
   refraction: RefractionData;
   anteriorSegment: AnteriorSegment;
@@ -486,32 +365,6 @@ export interface PatientSession {
   assessmentPlan: AssessmentPlan;
   createdAt: Date;
 }
-
-export const VISIT_TYPE_LABELS: Record<VisitType, string> = {
-  'routine': 'Examen de Routine',
-  'follow-up': 'Suivi',
-  'contact-lens-fitting': 'Ajustement Lentilles',
-  'contact-lens-verification': 'Vérification Lentilles',
-  'emergency': 'Urgence',
-  'specific-complaint': 'Plainte Spécifique',
-  'pediatric': 'Examen Pédiatrique',
-  'pre-operative': 'Évaluation Préopératoire',
-  'post-operative': 'Suivi Postopératoire',
-  'low-vision': 'Basse Vision',
-  'binocular-vision': 'Vision Binoculaire',
-  'dry-eye': 'Sécheresse Oculaire',
-  'visual-field-only': 'Champ Visuel Seulement',
-  'glasses-verification': 'Vérification Lunettes',
-};
-
-export const LAST_EXAM_LABELS: Record<LastExamPeriod, string> = {
-  'first': 'Premier Examen',
-  'less-than-6-months': '< 6 mois',
-  '6-to-12-months': '6-12 mois',
-  '1-to-2-years': '1-2 ans',
-  'more-than-2-years': '> 2 ans',
-  'unknown': 'Inconnu',
-};
 
 export function createEmptyPatientSession(): PatientSession {
   return {
@@ -611,17 +464,6 @@ export function createEmptyPatientSession(): PatientSession {
       ],
       notes: '',
     },
-    visualAcuity: {
-      scOD: '',
-      scOS: '',
-      scOU: '',
-      avecOD: '',
-      avecOS: '',
-      avecOU: '',
-      phOD: '',
-      phOS: '',
-      notes: '',
-    },
     objectiveRefraction: {
       method: 'autoref',
       rxOD: '',
@@ -633,10 +475,13 @@ export function createEmptyPatientSession(): PatientSession {
       rxOS: '',
       addOD: '',
       addOS: '',
-      vertexOD: '',
-      vertexOS: '',
-      prismOD: '',
-      prismOS: '',
+      subjAvOD: '',
+      subjAvOS: '',
+      subjAvOU: '',
+      finalRxOD: '',
+      finalRxOS: '',
+      finalAddOD: '',
+      finalAddOS: '',
       avOD: '',
       avOS: '',
       avOU: '',
@@ -645,6 +490,11 @@ export function createEmptyPatientSession(): PatientSession {
       cycloUsed: false,
       cycloRxOD: '',
       cycloRxOS: '',
+      cycloAddOD: '',
+      cycloAddOS: '',
+      cycloAvOD: '',
+      cycloAvOS: '',
+      cycloAvOU: '',
       cycloAgent: '',
       notes: '',
     },

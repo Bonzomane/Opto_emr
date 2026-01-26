@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Check, Minus, CircleDot } from 'lucide-react';
+import { QuickSelectButton } from './QuickSelectButton';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 export type TriState = 'negative' | 'positive';
 
@@ -24,6 +26,8 @@ export function TriStateButton({
   const [isExpanded, setIsExpanded] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside([buttonRef, popupRef], () => setIsExpanded(false), isExpanded);
 
   const handleClick = () => {
     if (state === 'negative') {
@@ -57,28 +61,6 @@ export function TriStateButton({
       setIsExpanded(!isExpanded);
     }
   };
-
-  // Close popup when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        popupRef.current &&
-        !popupRef.current.contains(event.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node)
-      ) {
-        setIsExpanded(false);
-      }
-    };
-
-    if (isExpanded) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isExpanded]);
 
   // Close when state changes to negative
   useEffect(() => {
@@ -184,17 +166,12 @@ interface TriStateOptionProps {
 
 export function TriStateOption({ label, checked, onChange }: TriStateOptionProps) {
   return (
-    <button
-      type="button"
+    <QuickSelectButton
+      label={label}
+      selected={checked}
       onClick={() => onChange(!checked)}
-      className={cn(
-        'px-2 py-0.5 text-xs rounded border transition-colors',
-        checked
-          ? 'bg-primary text-primary-foreground border-primary'
-          : 'bg-transparent text-foreground/70 border-border hover:bg-muted'
-      )}
-    >
-      {label}
-    </button>
+      size="xs"
+      unselectedClassName="bg-transparent text-foreground/70 border-border hover:bg-muted"
+    />
   );
 }

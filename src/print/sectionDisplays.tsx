@@ -10,17 +10,8 @@ import {
   VisualFields,
 } from '@/types/emr';
 import { formatRxDisplay } from '@/lib/rxFormat';
-import {
-  CHART_VL_LABELS,
-  CHART_VP_LABELS,
-  COULEURS_LABELS,
-  COVER_TEST_LABELS,
-  FILTRE_ROUGE_LABELS,
-  IOP_METHOD_LABELS,
-  MOUVEMENTS_LABELS,
-  PUPILLES_LABELS,
-} from './labels';
-import { DataRow, Empty, Note } from './previewComponents';
+import { LABELS } from '@/constants/labels';
+import { DataRow, Empty, Note, AttachedNote } from './previewComponents';
 
 const SEGMENT_BASE_LABELS: Record<string, string> = {
   paupieres: 'Paupières',
@@ -64,8 +55,8 @@ export function PrelimTestsDisplay({ tests }: { tests: PreliminaryTests }) {
     return parts.join(' ');
   };
 
-  const chartVL = tests.chartVL ? CHART_VL_LABELS[tests.chartVL] || tests.chartVL : '';
-  const chartVP = tests.chartVP ? CHART_VP_LABELS[tests.chartVP] || tests.chartVP : '';
+  const chartVL = tests.chartVL ? LABELS.charts.vl[tests.chartVL] || tests.chartVL : '';
+  const chartVP = tests.chartVP ? LABELS.charts.vp[tests.chartVP] || tests.chartVP : '';
 
   return (
     <div className="space-y-1 text-[10px]">
@@ -105,7 +96,7 @@ export function PrelimTestsDisplay({ tests }: { tests: PreliminaryTests }) {
       )}
       {tests.couleurs && (
         <DataRow label="Couleurs">
-          <span>{COULEURS_LABELS[tests.couleurs] || tests.couleurs}</span>
+          <span>{LABELS.couleurs[tests.couleurs] || tests.couleurs}</span>
         </DataRow>
       )}
       {hasStereo && (
@@ -115,13 +106,13 @@ export function PrelimTestsDisplay({ tests }: { tests: PreliminaryTests }) {
       )}
       {(tests.pupillesOD || tests.pupillesOS) && (
         <DataRow label="Pupilles">
-          {tests.pupillesOD && <span>OD: {PUPILLES_LABELS[tests.pupillesOD] || tests.pupillesOD}</span>}
-          {tests.pupillesOS && <span>OS: {PUPILLES_LABELS[tests.pupillesOS] || tests.pupillesOS}</span>}
+          {tests.pupillesOD && <span>OD: {LABELS.pupilles[tests.pupillesOD] || tests.pupillesOD}</span>}
+          {tests.pupillesOS && <span>OS: {LABELS.pupilles[tests.pupillesOS] || tests.pupillesOS}</span>}
         </DataRow>
       )}
       {tests.mouvements && (
         <DataRow label="Mvts Oculaires">
-          <span>{MOUVEMENTS_LABELS[tests.mouvements] || tests.mouvements}</span>
+          <span>{LABELS.mouvements[tests.mouvements] || tests.mouvements}</span>
         </DataRow>
       )}
       {tests.notes && <Note text={tests.notes} />}
@@ -138,7 +129,7 @@ export function ObjectiveRefractionDisplay({ obj }: { obj: ObjectiveRefraction }
     return (
       <div className="text-[10px]">
         <DataRow label={methodLabel}>
-          <span className="italic text-zinc-500">Imprimé et joint</span>
+          <AttachedNote />
         </DataRow>
         {obj.notes && <Note text={obj.notes} />}
       </div>
@@ -198,8 +189,8 @@ export function BinoDisplay({ bino }: { bino: BinocularVision }) {
           <div key={`bino-table-${index}`} className="space-y-1">
             {(table.coverTestVL || table.coverTestVP) && (
               <DataRow label={rxLabel ? `Test Écran (${rxLabel})` : 'Test Écran'}>
-                {table.coverTestVL && <span>VL: {COVER_TEST_LABELS[table.coverTestVL] || table.coverTestVL}</span>}
-                {table.coverTestVP && <span>VP: {COVER_TEST_LABELS[table.coverTestVP] || table.coverTestVP}</span>}
+                {table.coverTestVL && <span>VL: {LABELS.coverTest[table.coverTestVL] || table.coverTestVL}</span>}
+                {table.coverTestVP && <span>VP: {LABELS.coverTest[table.coverTestVP] || table.coverTestVP}</span>}
               </DataRow>
             )}
             {(table.maddoxVL || table.maddoxVP) && (
@@ -210,8 +201,8 @@ export function BinoDisplay({ bino }: { bino: BinocularVision }) {
             )}
             {(table.filtreRougeVL || table.filtreRougeVP) && (
               <DataRow label="Filtre Rouge">
-                {table.filtreRougeVL && <span>VL: {FILTRE_ROUGE_LABELS[table.filtreRougeVL] || table.filtreRougeVL}</span>}
-                {table.filtreRougeVP && <span>VP: {FILTRE_ROUGE_LABELS[table.filtreRougeVP] || table.filtreRougeVP}</span>}
+                {table.filtreRougeVL && <span>VL: {LABELS.filtreRouge[table.filtreRougeVL] || table.filtreRougeVL}</span>}
+                {table.filtreRougeVP && <span>VP: {LABELS.filtreRouge[table.filtreRougeVP] || table.filtreRougeVP}</span>}
               </DataRow>
             )}
             {(table.ppc || table.ppcRecovery) && (
@@ -412,7 +403,7 @@ export function IOPDisplay({ iop }: { iop: IOP }) {
     return (
       <div className="space-y-1 text-[10px]">
         <DataRow label="NCT">
-          <span className="italic text-zinc-500">Résultats joints à l'examen</span>
+          <AttachedNote />
         </DataRow>
         {iop.notes && <Note text={iop.notes} />}
       </div>
@@ -424,7 +415,7 @@ export function IOPDisplay({ iop }: { iop: IOP }) {
 
   return (
     <div className="space-y-1 text-[10px]">
-      <DataRow label={iop.method ? IOP_METHOD_LABELS[iop.method] || iop.method : 'PIO'}>
+      <DataRow label={iop.method ? LABELS.iop.methods[iop.method] || iop.method : 'PIO'}>
         {iop.iopOD && <span>OD: {iop.iopOD}</span>}
         {iop.iopOS && <span>OS: {iop.iopOS}</span>}
         {iop.time && <span className="text-zinc-400">@ {iop.time}</span>}
@@ -448,7 +439,7 @@ export function VisualFieldsDisplay({ vf }: { vf: VisualFields }) {
             {vf.type && <span>{vf.type}</span>}
             {vf.machine && <span className="text-zinc-400">({vf.machine})</span>}
           </DataRow>
-          <span className="italic text-zinc-500">Imprimé et joint</span>
+          <AttachedNote />
         </>
       )}
       {(vf.resultOD || vf.resultOS) && (
@@ -476,7 +467,7 @@ export function OCTDisplay({ oct }: { oct: OCT }) {
             {oct.type && <span>{oct.type}</span>}
             {oct.machine && <span className="text-zinc-400">({oct.machine})</span>}
           </DataRow>
-          <span className="italic text-zinc-500">Imprimé et joint</span>
+          <AttachedNote />
         </>
       )}
       {(oct.resultOD || oct.resultOS) && (

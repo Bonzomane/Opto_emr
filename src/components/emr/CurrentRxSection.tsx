@@ -1,4 +1,5 @@
 import { CurrentRx, PatientSession } from '@/types/emr';
+import { LABELS } from '@/constants/labels';
 import { DropdownButton, DropdownOption } from './DropdownButton';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
@@ -33,20 +34,6 @@ const ETAT_OPTIONS = [
   { id: 'casse', label: 'Cassé' },
 ];
 
- 
-
-const getTypeLabel = (id: string) => {
-  if (id === 'progressif') return 'Progressif';
-  if (id === 'sv-vl') return 'SV VL';
-  return RX_TYPES.find(o => o.id === id)?.label;
-};
-
-const getEtatLabel = (id: string) => {
-  if (id === 'bon') return 'Bon';
-  if (id === 'use') return 'Usé';
-  return ETAT_OPTIONS.find(o => o.id === id)?.label;
-};
-
 export function CurrentRxSection({ currentRx, onChange }: CurrentRxSectionProps) {
   // Parse stored values - format: "field:option" e.g. "type:lunettes,vision:bonne"
   const getFieldValue = (field: string): string | null => {
@@ -58,10 +45,8 @@ export function CurrentRxSection({ currentRx, onChange }: CurrentRxSectionProps)
     return null;
   };
 
-  const getFieldLabel = (field: string, options: { id: string; label: string }[]): string | undefined => {
-    const value = getFieldValue(field);
-    if (!value) return undefined;
-    return options.find(o => o.id === value)?.label;
+  const getFieldValueLabel = (field: string, id: string) => {
+    return LABELS.rxFields[field]?.[id] || id;
   };
 
   const setFieldValue = (field: string, value: string) => {
@@ -116,12 +101,12 @@ export function CurrentRxSection({ currentRx, onChange }: CurrentRxSectionProps)
           {RX_TYPE_COMMON.map((v) => (
             <QuickSelectButton 
               key={v} 
-              label={getTypeLabel(v) || v} 
+              label={getFieldValueLabel('type', v)} 
               selected={getFieldValue('type') === v} 
               onClick={() => getFieldValue('type') === v ? clearFieldValue('type') : setFieldValue('type', v)} 
             />
           ))}
-          <DropdownButton label="+" selectedLabel={RX_TYPES.find(o => o.id === getFieldValue('type'))?.label}>
+          <DropdownButton label="+" selectedLabel={getFieldValueLabel('type', getFieldValue('type') || '')}>
             {RX_TYPES.map((opt) => (
               <DropdownOption key={opt.id} label={opt.label} selected={getFieldValue('type') === opt.id} onSelect={() => setFieldValue('type', opt.id)} onDeselect={() => clearFieldValue('type')} />
             ))}
@@ -134,7 +119,7 @@ export function CurrentRxSection({ currentRx, onChange }: CurrentRxSectionProps)
           {VISION_OPTIONS.map((opt) => (
             <QuickSelectButton 
               key={opt.id} 
-              label={opt.label} 
+              label={getFieldValueLabel('visionVL', opt.id)} 
               selected={getFieldValue('visionVL') === opt.id} 
               onClick={() => getFieldValue('visionVL') === opt.id ? clearFieldValue('visionVL') : setFieldValue('visionVL', opt.id)} 
             />
@@ -147,7 +132,7 @@ export function CurrentRxSection({ currentRx, onChange }: CurrentRxSectionProps)
           {VISION_OPTIONS.map((opt) => (
             <QuickSelectButton 
               key={opt.id} 
-              label={opt.label} 
+              label={getFieldValueLabel('visionVP', opt.id)} 
               selected={getFieldValue('visionVP') === opt.id} 
               onClick={() => getFieldValue('visionVP') === opt.id ? clearFieldValue('visionVP') : setFieldValue('visionVP', opt.id)} 
             />
@@ -160,12 +145,12 @@ export function CurrentRxSection({ currentRx, onChange }: CurrentRxSectionProps)
           {ETAT_COMMON.map((v) => (
             <QuickSelectButton 
               key={v} 
-              label={getEtatLabel(v) || v} 
+              label={getFieldValueLabel('condition', v)} 
               selected={getFieldValue('condition') === v} 
               onClick={() => getFieldValue('condition') === v ? clearFieldValue('condition') : setFieldValue('condition', v)} 
             />
           ))}
-          <DropdownButton label="+" selectedLabel={ETAT_OPTIONS.find(o => o.id === getFieldValue('condition'))?.label}>
+          <DropdownButton label="+" selectedLabel={getFieldValueLabel('condition', getFieldValue('condition') || '')}>
             {ETAT_OPTIONS.map((opt) => (
               <DropdownOption key={opt.id} label={opt.label} selected={getFieldValue('condition') === opt.id} onSelect={() => setFieldValue('condition', opt.id)} onDeselect={() => clearFieldValue('condition')} />
             ))}

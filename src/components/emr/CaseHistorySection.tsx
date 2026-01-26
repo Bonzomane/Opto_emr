@@ -82,7 +82,7 @@ export function CaseHistorySection({ session, onUpdateField }: CaseHistorySectio
             >
               <Component
                 data={data}
-                onChange={(updates: any) => onUpdateField(section.dataKey, updates)}
+                onChange={(updates: Record<string, unknown>) => onUpdateField(section.dataKey, updates)}
                 session={session}
               />
             </div>

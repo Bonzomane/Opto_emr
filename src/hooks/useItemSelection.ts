@@ -39,7 +39,7 @@ export function useItemSelection(
     (itemId: string, active: boolean) => {
       const optionPrefix = `${itemId}:`;
       // Remove base item and all its options
-      let updated = items.filter(
+      const updated = items.filter(
         item => item !== itemId && !item.startsWith(optionPrefix)
       );
       

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from 'react';
 import { PatientSession, createEmptyPatientSession } from '@/types/emr';
 
@@ -56,7 +57,13 @@ function loadSessionsFromStorage(): PatientSession[] {
           notes: session.preliminaryTests?.notes ?? '',
         },
         binocularVision: (() => {
-          const legacy = session.binocularVision as any;
+          const legacy = session.binocularVision as { 
+            tables?: any[]; 
+            notes?: string; 
+            vbAvecRx?: boolean; 
+            vbSansRx?: boolean;
+            [key: string]: any 
+          };
           const defaultTable = {
             rxStatus: '',
             coverTestVL: '',
@@ -76,7 +83,7 @@ function loadSessionsFromStorage(): PatientSession[] {
 
           if (legacy?.tables && Array.isArray(legacy.tables) && legacy.tables.length > 0) {
             return {
-              tables: legacy.tables.map((table: any) => ({
+              tables: legacy.tables.map((table: Record<string, any>) => ({
                 ...defaultTable,
                 ...table,
               })),
@@ -111,12 +118,6 @@ function loadSessionsFromStorage(): PatientSession[] {
             notes: legacy?.notes ?? '',
           };
         })(),
-        visualAcuity: session.visualAcuity ?? {
-          scOD: '', scOS: '', scOU: '',
-          avecOD: '', avecOS: '', avecOU: '',
-          phOD: '', phOS: '',
-          notes: '',
-        },
         objectiveRefraction: session.objectiveRefraction ?? {
           method: 'autoref',
           rxOD: '', rxOS: '',

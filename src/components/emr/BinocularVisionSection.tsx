@@ -290,39 +290,34 @@ function MaddoxBuilder({
           <span className="text-[10px] text-muted-foreground">Δ:</span>
           <div className="grid grid-cols-[repeat(3,1.25rem)] gap-px">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-              <button
+              <QuickSelectButton
                 key={num}
-                type="button"
+                size="2xs"
+                label={String(num)}
+                selected={false}
                 onClick={() => toggleQuantity(num)}
-                className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
-              >
-                {num}
-              </button>
+              />
             ))}
           </div>
           <div className="grid grid-rows-3 gap-px">
-            <button
-              type="button"
+            <QuickSelectButton
+              size="2xs"
+              label="<"
+              selected={false}
               onClick={backspaceQuantity}
-              className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
-              aria-label="Retour"
-            >
-              &lt;
-            </button>
-            <button
-              type="button"
+            />
+            <QuickSelectButton
+              size="2xs"
+              label="0"
+              selected={false}
               onClick={() => toggleQuantity(0)}
-              className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
-            >
-              0
-            </button>
-            <button
-              type="button"
+            />
+            <QuickSelectButton
+              size="2xs"
+              label="C"
+              selected={false}
               onClick={clearQuantity}
-              className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
-            >
-              C
-            </button>
+            />
           </div>
           <div className="text-[10px] font-mono text-zinc-600 min-w-[16px]">
             {state.quantity ?? ''}
@@ -475,39 +470,34 @@ function CoverTestBuilder({
           <span className="text-[10px] text-muted-foreground">Δ:</span>
           <div className="grid grid-cols-[repeat(3,1.25rem)] gap-px">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-              <button
+              <QuickSelectButton
                 key={num}
-                type="button"
+                size="2xs"
+                label={String(num)}
+                selected={false}
                 onClick={() => toggleQuantity(num)}
-                className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
-              >
-                {num}
-              </button>
+              />
             ))}
           </div>
           <div className="grid grid-rows-3 gap-px">
-            <button
-              type="button"
+            <QuickSelectButton
+              size="2xs"
+              label="<"
+              selected={false}
               onClick={backspaceQuantity}
-              className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
-              aria-label="Retour"
-            >
-              &lt;
-            </button>
-            <button
-              type="button"
+            />
+            <QuickSelectButton
+              size="2xs"
+              label="0"
+              selected={false}
               onClick={() => toggleQuantity(0)}
-              className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
-            >
-              0
-            </button>
-            <button
-              type="button"
+            />
+            <QuickSelectButton
+              size="2xs"
+              label="C"
+              selected={false}
               onClick={clearQuantity}
-              className="w-5 h-5 text-[10px] font-medium rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
-            >
-              C
-            </button>
+            />
           </div>
           <div className="text-[10px] font-mono text-zinc-600 min-w-[16px]">
             {state.quantity ?? ''}

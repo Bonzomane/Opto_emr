@@ -8,11 +8,8 @@ import {
   VisualNeeds,
   CurrentRx,
   Complaint,
-  VISIT_TYPE_LABELS,
-  LAST_EXAM_LABELS,
-  RX_FIELD_LABELS,
-  VISUAL_NEEDS_LABELS,
 } from '@/types/emr';
+import { LABELS } from '@/constants/labels';
 import {
   ALLERGIES,
   FAMILY_GENERAL_CONDITIONS,
@@ -65,9 +62,9 @@ export function VisitDisplay({
     <div className="space-y-0.5 text-[10px]">
       {hasVisit && (
         <div className="flex gap-2 flex-wrap">
-          <span>{reasonForVisit.visitType ? VISIT_TYPE_LABELS[reasonForVisit.visitType] : '—'}</span>
+          <span>{reasonForVisit.visitType ? LABELS.visitType[reasonForVisit.visitType] : '—'}</span>
           <span className="text-zinc-400">
-            DEV: {lastExamInfo.lastExamPeriod ? LAST_EXAM_LABELS[lastExamInfo.lastExamPeriod] : '—'}
+            DEV: {lastExamInfo.lastExamPeriod ? LABELS.lastExam[lastExamInfo.lastExamPeriod] : '—'}
           </span>
         </div>
       )}
@@ -115,7 +112,7 @@ export function CurrentRxDisplay({ currentRx }: { currentRx: CurrentRx }) {
         <Row
           key={field}
           label={fieldLabels[field] || field}
-          value={values.map((v) => RX_FIELD_LABELS[field]?.[v] || v).join(', ')}
+          value={values.map((v) => LABELS.rxFields[field]?.[v] || v).join(', ')}
         />
       ))}
     </div>
@@ -258,7 +255,7 @@ export function VisualNeedsDisplay({ visualNeeds }: { visualNeeds: VisualNeeds }
   const parsed: { field: string; value: string }[] = [];
   for (const part of parts) {
     const [field, value] = part.split(':');
-    const label = VISUAL_NEEDS_LABELS[field]?.[value] || value;
+    const label = LABELS.visualNeeds[field]?.[value] || value;
     parsed.push({ field, value: label });
   }
 

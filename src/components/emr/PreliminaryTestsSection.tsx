@@ -1,4 +1,5 @@
 import { PreliminaryTests, PatientSession } from '@/types/emr';
+import { LABELS } from '@/constants/labels';
 import { Label } from '@/components/ui/label';
 import { DropdownButton, DropdownOption } from './DropdownButton';
 import { CollapsibleNotes } from './CollapsibleNotes';
@@ -87,19 +88,15 @@ function ChartSelector({ value, options, onChange }: { value: string; options: {
   return (
     <div className="flex gap-1">
       {options.map((opt) => (
-        <button
+        <QuickSelectButton
           key={opt.id}
-          type="button"
+          label={opt.label}
+          selected={value === opt.id}
           onClick={() => onChange(opt.id)}
-          className={cn(
-            'px-2 py-0.5 text-[10px] rounded border transition-colors',
-            value === opt.id
-              ? 'bg-zinc-700 text-white border-zinc-700'
-              : 'bg-white text-zinc-600 border-zinc-300 hover:bg-zinc-50'
-          )}
-        >
-          {opt.label}
-        </button>
+          size="xs"
+          selectedClassName="bg-zinc-700 text-white border-zinc-700"
+          unselectedClassName="bg-white text-zinc-600 border-zinc-300 hover:bg-zinc-50"
+        />
       ))}
     </div>
   );

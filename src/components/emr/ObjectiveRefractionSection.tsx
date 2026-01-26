@@ -152,7 +152,7 @@ function RefractionInput({
 
 // Parse a prescription string like "+1.00 -0.50 x 180" into parts
 function parseRx(rx: string): { sphere: string; cylinder: string; axis: string } {
-  const parts = rx.split(/[\/x]/).map(p => p.trim());
+  const parts = rx.split(/[/x]/).map(p => p.trim());
   return {
     sphere: parts[0] || '',
     cylinder: parts[1] || '',

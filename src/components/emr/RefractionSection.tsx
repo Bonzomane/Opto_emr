@@ -1,4 +1,5 @@
-import { RefractionData, CYCLO_AGENTS } from '@/types/emr';
+import { RefractionData } from '@/types/emr';
+import { LABELS } from '@/constants/labels';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DropdownButton, DropdownOption } from './DropdownButton';
@@ -457,7 +458,7 @@ function RxPicker({
 
 // Parse Rx string like "-1.25 / -0.50 x 180" into parts
 function parseRx(rx: string): { sphere: string; cylinder: string; axis: string } {
-  const parts = rx.split(/[\/x]/).map(p => p.trim());
+  const parts = rx.split(/[/x]/).map(p => p.trim());
   return {
     sphere: parts[0] || '',
     cylinder: parts[1] || '',
@@ -708,7 +709,7 @@ export function RefractionSection({ refraction, onChange }: RefractionSectionPro
               <div>
                 <Label className="text-xs text-muted-foreground">Agent</Label>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {CYCLO_AGENTS.map((agent) => (
+                  {LABELS.agents.cyclo.map((agent) => (
                     <QuickSelectButton
                       key={agent}
                       label={agent.split(' ')[0]}

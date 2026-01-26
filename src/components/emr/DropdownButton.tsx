@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
+import { QuickSelectButton } from './QuickSelectButton';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 interface DropdownButtonProps {
   label: string;
@@ -19,27 +21,7 @@ export function DropdownButton({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
 
-  // Close popup when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        popupRef.current &&
-        !popupRef.current.contains(event.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
+  useClickOutside([buttonRef, popupRef], () => setIsOpen(false), isOpen);
 
   const hasSelection = !!selectedLabel;
 
@@ -113,17 +95,12 @@ export function DropdownOption({ label, selected, onSelect, onDeselect }: Dropdo
   };
 
   return (
-    <button
-      type="button"
+    <QuickSelectButton
+      label={label}
+      selected={selected}
       onClick={handleClick}
-      className={cn(
-        'px-2.5 py-1.5 text-xs rounded border transition-colors',
-        selected
-          ? 'bg-primary text-primary-foreground border-primary'
-          : 'bg-transparent text-foreground border-border hover:bg-muted'
-      )}
-    >
-      {label}
-    </button>
+      size="sm"
+      unselectedClassName="bg-transparent text-foreground border-border hover:bg-muted"
+    />
   );
 }

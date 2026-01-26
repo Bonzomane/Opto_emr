@@ -1,4 +1,5 @@
 import { VisualNeeds, PatientSession } from '@/types/emr';
+import { LABELS } from '@/constants/labels';
 import { DropdownButton, DropdownOption } from './DropdownButton';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { QuickSelectButton } from './QuickSelectButton';
@@ -49,26 +50,6 @@ const DISTANCE_OPTIONS = [
   { id: 'toutes', label: 'Toutes' },
 ];
 
- 
-
-const getTravailLabel = (id: string) => {
-  if (id === 'bureau') return 'Bureau';
-  if (id === 'ecrans') return 'Écrans';
-  return TRAVAIL_OPTIONS.find(o => o.id === id)?.label;
-};
-
-const getConduiteLabel = (id: string) => {
-  if (id === 'les-deux') return 'J+N';
-  if (id === 'non') return 'Non';
-  return CONDUITE_OPTIONS.find(o => o.id === id)?.label;
-};
-
-const getLoisirsLabel = (id: string) => {
-  if (id === 'lecture') return 'Lecture';
-  if (id === 'sports') return 'Sports';
-  return LOISIRS_OPTIONS.find(o => o.id === id)?.label;
-};
-
 export function VisualNeedsSection({ visualNeeds, onChange }: VisualNeedsSectionProps) {
   const getFieldValue = (field: string): string | null => {
     const parts = visualNeeds.needs.split(',').filter(v => v);
@@ -79,10 +60,8 @@ export function VisualNeedsSection({ visualNeeds, onChange }: VisualNeedsSection
     return null;
   };
 
-  const getFieldLabel = (field: string, options: { id: string; label: string }[]): string | undefined => {
-    const value = getFieldValue(field);
-    if (!value) return undefined;
-    return options.find(o => o.id === value)?.label;
+  const getFieldValueLabel = (field: string, id: string) => {
+    return LABELS.visualNeeds[field]?.[id] || id;
   };
 
   const setFieldValue = (field: string, value: string) => {
@@ -113,9 +92,14 @@ export function VisualNeedsSection({ visualNeeds, onChange }: VisualNeedsSection
         <div className="flex flex-wrap items-center gap-1">
           <span className="text-xs text-muted-foreground min-w-[50px]">Travail</span>
           {TRAVAIL_COMMON.map((v) => (
-            <QuickSelectButton key={v} label={getTravailLabel(v) || v} selected={getFieldValue('travail') === v} onClick={() => handleToggle('travail', v)} />
+            <QuickSelectButton 
+              key={v} 
+              label={getFieldValueLabel('travail', v)} 
+              selected={getFieldValue('travail') === v} 
+              onClick={() => handleToggle('travail', v)} 
+            />
           ))}
-          <DropdownButton label="+" selectedLabel={TRAVAIL_OPTIONS.find(o => o.id === getFieldValue('travail'))?.label}>
+          <DropdownButton label="+" selectedLabel={getFieldValueLabel('travail', getFieldValue('travail') || '')}>
             {TRAVAIL_OPTIONS.map((opt) => (
               <DropdownOption key={opt.id} label={opt.label} selected={getFieldValue('travail') === opt.id} onSelect={() => setFieldValue('travail', opt.id)} onDeselect={() => clearFieldValue('travail')} />
             ))}
@@ -134,9 +118,14 @@ export function VisualNeedsSection({ visualNeeds, onChange }: VisualNeedsSection
         <div className="flex flex-wrap items-center gap-1">
           <span className="text-xs text-muted-foreground min-w-[50px]">Conduite</span>
           {CONDUITE_COMMON.map((v) => (
-            <QuickSelectButton key={v} label={getConduiteLabel(v) || v} selected={getFieldValue('conduite') === v} onClick={() => handleToggle('conduite', v)} />
+            <QuickSelectButton 
+              key={v} 
+              label={v === 'les-deux' ? 'J+N' : getFieldValueLabel('conduite', v)} 
+              selected={getFieldValue('conduite') === v} 
+              onClick={() => handleToggle('conduite', v)} 
+            />
           ))}
-          <DropdownButton label="+" selectedLabel={CONDUITE_OPTIONS.find(o => o.id === getFieldValue('conduite'))?.label}>
+          <DropdownButton label="+" selectedLabel={getFieldValueLabel('conduite', getFieldValue('conduite') || '')}>
             {CONDUITE_OPTIONS.map((opt) => (
               <DropdownOption key={opt.id} label={opt.label} selected={getFieldValue('conduite') === opt.id} onSelect={() => setFieldValue('conduite', opt.id)} onDeselect={() => clearFieldValue('conduite')} />
             ))}
@@ -155,9 +144,14 @@ export function VisualNeedsSection({ visualNeeds, onChange }: VisualNeedsSection
         <div className="flex flex-wrap items-center gap-1">
           <span className="text-xs text-muted-foreground min-w-[50px]">Loisirs</span>
           {LOISIRS_COMMON.map((v) => (
-            <QuickSelectButton key={v} label={getLoisirsLabel(v) || v} selected={getFieldValue('loisirs') === v} onClick={() => handleToggle('loisirs', v)} />
+            <QuickSelectButton 
+              key={v} 
+              label={getFieldValueLabel('loisirs', v)} 
+              selected={getFieldValue('loisirs') === v} 
+              onClick={() => handleToggle('loisirs', v)} 
+            />
           ))}
-          <DropdownButton label="+" selectedLabel={LOISIRS_OPTIONS.find(o => o.id === getFieldValue('loisirs'))?.label}>
+          <DropdownButton label="+" selectedLabel={getFieldValueLabel('loisirs', getFieldValue('loisirs') || '')}>
             {LOISIRS_OPTIONS.map((opt) => (
               <DropdownOption key={opt.id} label={opt.label} selected={getFieldValue('loisirs') === opt.id} onSelect={() => setFieldValue('loisirs', opt.id)} onDeselect={() => clearFieldValue('loisirs')} />
             ))}

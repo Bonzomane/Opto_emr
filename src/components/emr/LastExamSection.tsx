@@ -1,9 +1,10 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LastExamInfo, LastExamPeriod, LAST_EXAM_LABELS, PatientSession } from '@/types/emr';
+import { LastExamInfo, LastExamPeriod, PatientSession } from '@/types/emr';
+import { LABELS } from '@/constants/labels';
 import { CollapsibleNotes } from './CollapsibleNotes';
-import { cn } from '@/lib/utils';
 import { SectionHeader } from './SectionHeader';
+import { QuickSelectButton } from './QuickSelectButton';
 
 interface LastExamSectionProps {
   lastExamInfo: LastExamInfo;
@@ -11,7 +12,7 @@ interface LastExamSectionProps {
   session?: PatientSession;
 }
 
-const LAST_EXAM_PERIODS = Object.entries(LAST_EXAM_LABELS) as [LastExamPeriod, string][];
+const LAST_EXAM_PERIODS = Object.entries(LABELS.lastExam) as [LastExamPeriod, string][];
 
 export function LastExamSection({ lastExamInfo, onChange, session }: LastExamSectionProps) {
   const handlePeriodClick = (period: LastExamPeriod) => {
@@ -29,19 +30,13 @@ export function LastExamSection({ lastExamInfo, onChange, session }: LastExamSec
       <div className="space-y-3">
         <div className="flex flex-wrap gap-1.5">
           {LAST_EXAM_PERIODS.map(([period, label]) => (
-            <button
+            <QuickSelectButton
               key={period}
-              type="button"
+              label={label}
+              selected={lastExamInfo.lastExamPeriod === period}
               onClick={() => handlePeriodClick(period)}
-              className={cn(
-                'px-3 py-2 text-xs rounded-md border transition-all duration-200',
-                lastExamInfo.lastExamPeriod === period
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-muted/50 border-border text-foreground hover:bg-muted'
-              )}
-            >
-              {label}
-            </button>
+              size="md"
+            />
           ))}
         </div>
 

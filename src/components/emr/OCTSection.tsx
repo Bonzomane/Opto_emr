@@ -1,4 +1,5 @@
-import { OCT, OCT_TYPES, OCT_MACHINES, OCT_RESULTS } from '@/types/emr';
+import { OCT } from '@/types/emr';
+import { LABELS } from '@/constants/labels';
 import { Label } from '@/components/ui/label';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { DropdownButton, DropdownOption } from './DropdownButton';
@@ -9,8 +10,6 @@ interface OCTSectionProps {
   oct: OCT;
   onChange: (updates: Partial<OCT>) => void;
 }
-
- 
 
 export function OCTSection({ oct, onChange }: OCTSectionProps) {
   const handleToggle = (field: keyof OCT, value: string) => {
@@ -36,9 +35,9 @@ export function OCTSection({ oct, onChange }: OCTSectionProps) {
           ))}
           <DropdownButton 
             label="+" 
-            selectedLabel={OCT_RESULTS.filter(r => !commonResults.includes(r)).find(r => value === r)}
+            selectedLabel={LABELS.oct.results.filter(r => !commonResults.includes(r)).find(r => value === r)}
           >
-            {OCT_RESULTS.filter(r => !commonResults.includes(r)).map((opt) => (
+            {LABELS.oct.results.filter(r => !commonResults.includes(r)).map((opt) => (
               <DropdownOption
                 key={opt}
                 label={opt}
@@ -61,7 +60,7 @@ export function OCTSection({ oct, onChange }: OCTSectionProps) {
       <div className="space-y-2">
         <Label className="text-xs font-medium">Type</Label>
         <div className="flex flex-wrap gap-1">
-          {OCT_TYPES.map((t) => (
+          {LABELS.oct.types.map((t) => (
             <QuickSelectButton 
               key={t} 
               label={t} 
@@ -76,7 +75,7 @@ export function OCTSection({ oct, onChange }: OCTSectionProps) {
       <div className="space-y-2">
         <Label className="text-xs font-medium">Appareil</Label>
         <div className="flex flex-wrap gap-1">
-          {OCT_MACHINES.map((m) => (
+          {LABELS.oct.machines.map((m) => (
             <QuickSelectButton 
               key={m} 
               label={m} 

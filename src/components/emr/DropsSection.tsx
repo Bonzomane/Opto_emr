@@ -1,4 +1,5 @@
-import { Drops, DIL_AGENTS } from '@/types/emr';
+import { Drops } from '@/types/emr';
+import { LABELS } from '@/constants/labels';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CollapsibleNotes } from './CollapsibleNotes';
@@ -9,8 +10,6 @@ interface DropsSectionProps {
   drops: Drops;
   onChange: (updates: Partial<Drops>) => void;
 }
-
- 
 
 export function DropsSection({ drops, onChange }: DropsSectionProps) {
   return (
@@ -33,7 +32,7 @@ export function DropsSection({ drops, onChange }: DropsSectionProps) {
             <div>
               <Label className="text-xs text-muted-foreground">Agent</Label>
               <div className="flex flex-wrap gap-1 mt-1">
-                {DIL_AGENTS.map((agent) => (
+                {LABELS.agents.dil.map((agent) => (
                   <QuickSelectButton 
                     key={agent} 
                     label={agent.split(' ')[0]} 

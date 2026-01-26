@@ -5,6 +5,7 @@ import { DropdownButton, DropdownOption } from './DropdownButton';
 import { QuickSelectButton } from './QuickSelectButton';
 import { hasCsvValue, toggleCsvValue } from '@/lib/selection';
 import { SectionHeader } from './SectionHeader';
+import { LateralizedInput } from './LateralizedInput';
 
 interface PosteriorSegmentSectionProps {
   posteriorSegment: PosteriorSegment;
@@ -161,21 +162,13 @@ export function PosteriorSegmentSection({ posteriorSegment, onChange }: Posterio
 
       <div className="space-y-4">
         {FIELDS.map(({ baseKey, label, common, options }) => (
-          <div key={baseKey} className="space-y-2">
-            <Label className="text-xs font-medium">{label}</Label>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground">OD</span>
-                {renderEyeField(baseKey, 'OD', common, options)}
-              </div>
-              <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground">OS</span>
-                {renderEyeField(baseKey, 'OS', common, options)}
-              </div>
-            </div>
-          </div>
+          <LateralizedInput
+            key={baseKey}
+            label={label}
+            od={renderEyeField(baseKey, 'OD', common, options)}
+            os={renderEyeField(baseKey, 'OS', common, options)}
+          />
         ))}
-
       </div>
 
       <CollapsibleNotes

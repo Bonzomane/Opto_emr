@@ -1,7 +1,8 @@
-import { ReasonForVisit, VisitType, VISIT_TYPE_LABELS, PatientSession } from '@/types/emr';
+import { ReasonForVisit, VisitType, PatientSession } from '@/types/emr';
+import { LABELS } from '@/constants/labels';
 import { DropdownButton, DropdownOption } from './DropdownButton';
 import { CollapsibleNotes } from './CollapsibleNotes';
-import { cn } from '@/lib/utils';
+import { QuickSelectButton } from './QuickSelectButton';
 import { SectionHeader } from './SectionHeader';
 
 interface ReasonForVisitSectionProps {
@@ -24,7 +25,7 @@ export function ReasonForVisitSection({ reasonForVisit, onChange, session }: Rea
 
   const getGroupLabel = (types: VisitType[]): string | undefined => {
     if (selected && types.includes(selected)) {
-      return VISIT_TYPE_LABELS[selected];
+      return LABELS.visitType[selected];
     }
     return undefined;
   };
@@ -44,19 +45,13 @@ export function ReasonForVisitSection({ reasonForVisit, onChange, session }: Rea
       <div className="flex flex-wrap gap-2">
         {/* Common types as simple buttons */}
         {COMMON_TYPES.map((type) => (
-          <button
+          <QuickSelectButton
             key={type}
-            type="button"
+            label={LABELS.visitType[type]}
+            selected={selected === type}
             onClick={() => selected === type ? handleDeselect() : handleSelect(type)}
-            className={cn(
-              'px-3 py-2 text-xs rounded-md border transition-all duration-200',
-              selected === type
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-muted/50 border-border text-foreground hover:bg-muted'
-            )}
-          >
-            {VISIT_TYPE_LABELS[type]}
-          </button>
+            size="md"
+          />
         ))}
 
         {/* Lentilles dropdown */}
@@ -67,7 +62,7 @@ export function ReasonForVisitSection({ reasonForVisit, onChange, session }: Rea
           {LENTILLES_TYPES.map((type) => (
             <DropdownOption
               key={type}
-              label={VISIT_TYPE_LABELS[type]}
+              label={LABELS.visitType[type]}
               selected={selected === type}
               onSelect={() => handleSelect(type)}
               onDeselect={handleDeselect}
@@ -83,7 +78,7 @@ export function ReasonForVisitSection({ reasonForVisit, onChange, session }: Rea
           {CHIRURGIE_TYPES.map((type) => (
             <DropdownOption
               key={type}
-              label={VISIT_TYPE_LABELS[type]}
+              label={LABELS.visitType[type]}
               selected={selected === type}
               onSelect={() => handleSelect(type)}
               onDeselect={handleDeselect}
@@ -99,7 +94,7 @@ export function ReasonForVisitSection({ reasonForVisit, onChange, session }: Rea
           {SPECIALISE_TYPES.map((type) => (
             <DropdownOption
               key={type}
-              label={VISIT_TYPE_LABELS[type]}
+              label={LABELS.visitType[type]}
               selected={selected === type}
               onSelect={() => handleSelect(type)}
               onDeselect={handleDeselect}
@@ -115,7 +110,7 @@ export function ReasonForVisitSection({ reasonForVisit, onChange, session }: Rea
           {AUTRES_TYPES.map((type) => (
             <DropdownOption
               key={type}
-              label={VISIT_TYPE_LABELS[type]}
+              label={LABELS.visitType[type]}
               selected={selected === type}
               onSelect={() => handleSelect(type)}
               onDeselect={handleDeselect}

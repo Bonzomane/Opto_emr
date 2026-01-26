@@ -1,28 +1,40 @@
 import React from 'react';
 
+export const PRINT_COLORS = {
+  label: 'text-zinc-400',
+  sublabel: 'text-zinc-500', 
+  text: 'text-zinc-600',
+  heading: 'text-zinc-700',
+  border: 'border-zinc-300',
+};
+
 export function Empty() {
-  return <span className="text-zinc-400 italic">Aucun</span>;
+  return <span className={`${PRINT_COLORS.label} italic`}>Aucun</span>;
 }
 
 export function Note({ text }: { text: string }) {
   return (
-    <p className="text-[10px] text-zinc-500 mt-1.5 pl-2 border-l-2 border-zinc-300 italic">
+    <p className={`text-[10px] ${PRINT_COLORS.sublabel} mt-1.5 pl-2 border-l-2 ${PRINT_COLORS.border} italic`}>
       {text}
     </p>
   );
 }
 
+export function AttachedNote() {
+  return <span className={`italic ${PRINT_COLORS.sublabel}`}>Imprimé et joint</span>;
+}
+
 export function Row({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <span className="text-[9px] text-zinc-400 uppercase block">{label}</span>
+      <span className={`text-[9px] ${PRINT_COLORS.label} uppercase block`}>{label}</span>
       <span className="font-medium">{value}</span>
     </div>
   );
 }
 
 export function SubLabel({ children }: { children: React.ReactNode }) {
-  return <span className="text-[9px] text-zinc-400 uppercase block">{children}</span>;
+  return <span className={`text-[9px] ${PRINT_COLORS.label} uppercase block`}>{children}</span>;
 }
 
 export function DataRow({ label, children }: { label: string; children: React.ReactNode }) {

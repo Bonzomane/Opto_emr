@@ -1,4 +1,5 @@
-import { VisualFields, VF_TYPES, VF_MACHINES, VF_RESULTS } from '@/types/emr';
+import { VisualFields } from '@/types/emr';
+import { LABELS } from '@/constants/labels';
 import { Label } from '@/components/ui/label';
 import { CollapsibleNotes } from './CollapsibleNotes';
 import { DropdownButton, DropdownOption } from './DropdownButton';
@@ -14,9 +15,7 @@ interface VisualFieldsSectionProps {
 const RESULT_QUICK_TAGS = ['Fiable', 'Complet', 'Pas fiable', 'Normal'];
 
 // Other results from dropdown (pathological findings)
-const RESULT_OTHER = VF_RESULTS.filter(r => !['Normal', 'Fiable et complet', 'Pas fiable'].includes(r));
-
- 
+const RESULT_OTHER = LABELS.vf.results.filter(r => !['Normal', 'Fiable et complet', 'Pas fiable'].includes(r));
 
 export function VisualFieldsSection({ visualFields, onChange }: VisualFieldsSectionProps) {
   const handleToggle = (field: keyof VisualFields, value: string) => {
@@ -92,7 +91,7 @@ export function VisualFieldsSection({ visualFields, onChange }: VisualFieldsSect
       <div className="space-y-2">
         <Label className="text-xs font-medium">Type</Label>
         <div className="flex flex-wrap gap-1">
-          {VF_TYPES.map((t) => (
+          {LABELS.vf.types.map((t) => (
             <QuickSelectButton 
               key={t} 
               label={t} 
@@ -107,7 +106,7 @@ export function VisualFieldsSection({ visualFields, onChange }: VisualFieldsSect
       <div className="space-y-2">
         <Label className="text-xs font-medium">Appareil</Label>
         <div className="flex flex-wrap gap-1">
-          {VF_MACHINES.map((m) => (
+          {LABELS.vf.machines.map((m) => (
             <QuickSelectButton 
               key={m} 
               label={m} 
