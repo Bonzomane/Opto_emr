@@ -31,27 +31,15 @@ export function TriStateButton({
 
   const handleClick = () => {
     if (state === 'negative') {
+      // Négatif → Positif
       onStateChange('positive');
       if (children) {
         setIsExpanded(true);
       }
     } else {
-      // State is positive
-      if (children) {
-        if (isExpanded) {
-          // Popup is open - close it, but don't go negative if has details
-          setIsExpanded(false);
-          if (!hasSelectedDetails) {
-            onStateChange('negative');
-          }
-        } else {
-          // Popup is closed - reopen it to add more options
-          setIsExpanded(true);
-        }
-      } else {
-        // No children, just toggle
-        onStateChange('negative');
-      }
+      // Positif → Négatif (désélectionné)
+      onStateChange('negative');
+      setIsExpanded(false);
     }
   };
 
