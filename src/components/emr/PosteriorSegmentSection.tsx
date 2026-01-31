@@ -22,6 +22,17 @@ const FIELDS: {
   options: { id: string; label: string }[];
 }[] = [
   { 
+    baseKey: 'vitre', 
+    label: 'Vitré',
+    common: ['Clair'],
+    options: [
+      { id: 'cf', label: 'Corps flottants' },
+      { id: 'dvp', label: 'DVP' },
+      { id: 'hemorragie', label: 'Hémorragie' },
+      { id: 'opacites', label: 'Opacités' },
+    ]
+  },
+  { 
     baseKey: 'papille', 
     label: 'Papille',
     common: ['Saine', 'Distincte', 'Rosée'],
@@ -68,17 +79,6 @@ const FIELDS: {
       { id: 'non-vue', label: 'Non vue' },
       { id: 'drusen', label: 'Drusen périph.' },
       { id: 'pigment', label: 'Pigment' },
-    ]
-  },
-  { 
-    baseKey: 'vitre', 
-    label: 'Vitré',
-    common: ['Clair'],
-    options: [
-      { id: 'cf', label: 'Corps flottants' },
-      { id: 'dvp', label: 'DVP' },
-      { id: 'hemorragie', label: 'Hémorragie' },
-      { id: 'opacites', label: 'Opacités' },
     ]
   },
 ];

@@ -60,7 +60,6 @@ const NORMAL_EXAM_DEFAULTS = {
     cdVertOS: '0.3', cdHorizOS: '0.3',
     maculaOD: 'Saine', maculaOS: 'Saine',
     vaisseauxOD: '2/3-1/3', vaisseauxOS: '2/3-1/3',
-    peripherieOD: 'Saine', peripherieOS: 'Saine',
     vitreOD: 'Clair', vitreOS: 'Clair',
   },
   visualFields: {
