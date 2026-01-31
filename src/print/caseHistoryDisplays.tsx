@@ -207,10 +207,9 @@ export function PersonalGeneralHealthDisplay({
             <ItemList items={personalGeneralHealth.medications} definitions={MEDICATIONS} />
           )}
           {personalGeneralHealth.otherMedications && (
-            <span className="text-[10px]">
-              {personalGeneralHealth.medications.length > 0 ? ', ' : ''}
-              {personalGeneralHealth.otherMedications}
-            </span>
+            <div>
+              <span className="font-medium">{personalGeneralHealth.otherMedications}</span>
+            </div>
           )}
         </div>
       )}
