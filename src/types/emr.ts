@@ -447,6 +447,7 @@ export interface PersonalOcularHealth {
 export interface PersonalGeneralHealth {
   conditions: string[];
   medications: string[];
+  otherMedications: string;
   allergies: string[];
   hasNKDA: boolean;
   notes: string;
@@ -554,6 +555,7 @@ export function createEmptyPatientSession(): PatientSession {
     personalGeneralHealth: {
       conditions: [],
       medications: [],
+      otherMedications: '',
       allergies: [],
       hasNKDA: true,
       notes: '',

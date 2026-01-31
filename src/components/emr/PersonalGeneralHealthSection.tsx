@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { PersonalGeneralHealth, PatientSession } from '@/types/emr';
 import { ConditionGrid } from './ConditionGrid';
 import { CollapsibleNotes } from './CollapsibleNotes';
@@ -39,6 +40,8 @@ export function PersonalGeneralHealthSection({ personalGeneralHealth, onChange }
         label="Médicaments"
         count={medicationCount}
         hasNone={false}
+        otherValue={personalGeneralHealth.otherMedications}
+        onOtherChange={(value) => onChange({ otherMedications: value })}
       >
         <ConditionGrid
           definitions={MEDICATIONS}
@@ -79,10 +82,12 @@ interface GridDropdownProps {
   hasNone?: boolean;
   onNoneToggle?: (hasNone: boolean) => void;
   noneLabel?: string;
+  otherValue?: string;
+  onOtherChange?: (value: string) => void;
   children: React.ReactNode;
 }
 
-function GridDropdown({ label, count, hasNone, onNoneToggle, noneLabel, children }: GridDropdownProps) {
+function GridDropdown({ label, count, hasNone, onNoneToggle, noneLabel, otherValue, onOtherChange, children }: GridDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -169,6 +174,17 @@ function GridDropdown({ label, count, hasNone, onNoneToggle, noneLabel, children
           style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.25)' }}
         >
           {children}
+          {onOtherChange && (
+            <div className="mt-3 pt-3 border-t border-border">
+              <Label className="text-xs text-muted-foreground mb-1 block">Autre</Label>
+              <Input
+                value={otherValue || ''}
+                onChange={(e) => onOtherChange(e.target.value)}
+                placeholder="Autres médicaments..."
+                className="h-8 text-xs"
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

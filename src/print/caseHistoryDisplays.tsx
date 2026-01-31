@@ -188,6 +188,7 @@ export function PersonalGeneralHealthDisplay({
   const hasData =
     personalGeneralHealth.conditions.length > 0 ||
     personalGeneralHealth.medications.length > 0 ||
+    personalGeneralHealth.otherMedications ||
     personalGeneralHealth.notes;
 
   if (!hasData) return <Empty />;
@@ -199,10 +200,18 @@ export function PersonalGeneralHealthDisplay({
       ) : (
         <Empty />
       )}
-      {personalGeneralHealth.medications.length > 0 && (
+      {(personalGeneralHealth.medications.length > 0 || personalGeneralHealth.otherMedications) && (
         <div>
           <span className="text-[9px] text-zinc-500 font-medium">Médicaments: </span>
-          <ItemList items={personalGeneralHealth.medications} definitions={MEDICATIONS} />
+          {personalGeneralHealth.medications.length > 0 && (
+            <ItemList items={personalGeneralHealth.medications} definitions={MEDICATIONS} />
+          )}
+          {personalGeneralHealth.otherMedications && (
+            <span className="text-[10px]">
+              {personalGeneralHealth.medications.length > 0 ? ', ' : ''}
+              {personalGeneralHealth.otherMedications}
+            </span>
+          )}
         </div>
       )}
       {personalGeneralHealth.notes && <Note text={personalGeneralHealth.notes} />}
