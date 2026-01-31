@@ -28,12 +28,12 @@ const NORMAL_EXAM_DEFAULTS = {
   binocularVision: {
     tables: [
       {
-        rxStatus: '',
+        rxStatus: '' as const,
         coverTestVL: 'Ortho',
         coverTestVP: 'Ortho',
         maddoxVL: '',
         maddoxVP: 'Ortho',
-        filtreRougeVL: 'Fusion',
+        filtreRougeVL: '',
         filtreRougeVP: 'Fusion',
         reservesBIVL: '',
         reservesBOVL: '',

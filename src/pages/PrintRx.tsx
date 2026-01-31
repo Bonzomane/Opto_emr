@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ArrowLeft, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { parseRxParts } from '@/lib/rxFormat';
 export default function PrintRx() {
   const location = useLocation();
   const session = location.state?.session as PatientSession | undefined;
+  const [validity, setValidity] = useState<1 | 2>(2);
 
   if (!session) {
     return (
@@ -32,6 +34,23 @@ export default function PrintRx() {
         <Button asChild variant="ghost" size="sm">
           <Link to="/"><ArrowLeft className="h-4 w-4 mr-2" />Retour</Link>
         </Button>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-zinc-500">Validité:</span>
+          <Button 
+            variant={validity === 1 ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setValidity(1)}
+          >
+            1 an
+          </Button>
+          <Button 
+            variant={validity === 2 ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setValidity(2)}
+          >
+            2 ans
+          </Button>
+        </div>
         <Button onClick={() => window.print()} size="sm">
           <Printer className="h-4 w-4 mr-2" />Imprimer
         </Button>
@@ -70,8 +89,6 @@ export default function PrintRx() {
                   <th className="border border-zinc-300 p-3">Cylindre</th>
                   <th className="border border-zinc-300 p-3">Axe</th>
                   <th className="border border-zinc-300 p-3">Add</th>
-                  <th className="border border-zinc-300 p-3">ARN</th>
-                  <th className="border border-zinc-300 p-3">ARP</th>
                 </tr>
               </thead>
               <tbody className="text-lg">
@@ -87,8 +104,6 @@ export default function PrintRx() {
                   <td className="border border-zinc-300 p-3">{parseRxParts(refraction.rxOD).cyl || '—'}</td>
                   <td className="border border-zinc-300 p-3">{parseRxParts(refraction.rxOD).axis ? `${parseRxParts(refraction.rxOD).axis}°` : '—'}</td>
                   <td className="border border-zinc-300 p-3">{refraction.addOD || '—'}</td>
-                  <td className="border border-zinc-300 p-3">{refraction.arnOD || '—'}</td>
-                  <td className="border border-zinc-300 p-3">{refraction.arpOD || '—'}</td>
                 </tr>
                 <tr>
                   <td className="border border-zinc-300 p-3 font-bold bg-zinc-50">OS</td>
@@ -102,8 +117,6 @@ export default function PrintRx() {
                   <td className="border border-zinc-300 p-3">{parseRxParts(refraction.rxOS).cyl || '—'}</td>
                   <td className="border border-zinc-300 p-3">{parseRxParts(refraction.rxOS).axis ? `${parseRxParts(refraction.rxOS).axis}°` : '—'}</td>
                   <td className="border border-zinc-300 p-3">{refraction.addOS || '—'}</td>
-                  <td className="border border-zinc-300 p-3">{refraction.arnOS || '—'}</td>
-                  <td className="border border-zinc-300 p-3">{refraction.arpOS || '—'}</td>
                 </tr>
               </tbody>
             </table>
@@ -135,7 +148,7 @@ export default function PrintRx() {
           <div className="mt-8 pt-6 border-t border-zinc-300">
             <div className="flex justify-between items-end">
               <div className="text-sm text-zinc-500">
-                <p>Valide pour 2 ans</p>
+                <p>Valide pour {validity} an{validity > 1 ? 's' : ''}</p>
               </div>
               <div className="text-center">
                 <div className="w-64 border-b border-zinc-400 mb-2 h-12"></div>

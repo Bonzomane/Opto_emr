@@ -38,7 +38,7 @@ interface DeviationState {
   quantity: string | null;
 }
 
-type MaddoxDirection = 'eso' | 'exo' | 'hyper' | 'hypo';
+type MaddoxDirection = 'ortho' | 'eso' | 'exo' | 'hyper' | 'hypo';
 
 interface MaddoxState {
   direction: MaddoxDirection | null;
@@ -166,6 +166,10 @@ function parseMaddoxNotation(notation: string): MaddoxState {
     return { direction: null, eye: null, quantity: null };
   }
 
+  if (notation === 'Ortho') {
+    return { direction: 'ortho', eye: null, quantity: null };
+  }
+
   const state: MaddoxState = { direction: null, eye: null, quantity: null };
 
   // Extract quantity (leading number)
@@ -201,8 +205,10 @@ function parseMaddoxNotation(notation: string): MaddoxState {
 function buildMaddoxNotation(state: MaddoxState): string {
   if (!state.direction) return '';
 
+  if (state.direction === 'ortho') return 'Ortho';
+
   const isVertical = state.direction === 'hyper' || state.direction === 'hypo';
-  const dirPrefix: Record<MaddoxDirection, string> = {
+  const dirPrefix: Record<Exclude<MaddoxDirection, 'ortho'>, string> = {
     eso: 'E',
     exo: 'X',
     hyper: 'H',
@@ -274,6 +280,12 @@ function MaddoxBuilder({
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-1">
+        <QuickSelectButton
+          size="xs"
+          label="Ortho"
+          selected={state.direction === 'ortho'}
+          onClick={() => toggleDirection('ortho')}
+        />
         {(['eso', 'exo', 'hyper', 'hypo'] as MaddoxDirection[]).map((dir) => (
           <QuickSelectButton
             key={dir}
@@ -285,7 +297,7 @@ function MaddoxBuilder({
         ))}
       </div>
 
-      {state.direction && (
+      {state.direction && state.direction !== 'ortho' && (
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground">Δ:</span>
           <div className="grid grid-cols-[repeat(3,1.25rem)] gap-px">

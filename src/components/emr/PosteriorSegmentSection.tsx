@@ -31,6 +31,7 @@ const FIELDS: {
       { id: 'excavation', label: 'Excavation' },
       { id: 'hemorragie', label: 'Hémorragie' },
       { id: 'atrophie', label: 'Atrophie' },
+      { id: 'app', label: 'APP' },
     ]
   },
   { 
