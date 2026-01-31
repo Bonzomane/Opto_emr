@@ -50,6 +50,7 @@ export default function PrintPreview() {
   }
 
   const { 
+    patientInfo,
     reasonForVisit, 
     lastExamInfo, 
     currentRx, 
@@ -100,7 +101,7 @@ export default function PrintPreview() {
             </div>
             {/* Patient Sticker Space */}
             <div className="w-[200px] h-[70px] border border-dashed border-zinc-300 rounded flex items-center justify-center text-[9px] text-zinc-400 print:border-zinc-200">
-              Étiquette patient
+              {patientInfo.name || 'Étiquette patient'}
             </div>
           </div>
 

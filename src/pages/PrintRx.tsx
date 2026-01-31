@@ -72,8 +72,10 @@ export default function PrintRx() {
 
           {/* Patient Sticker Area + Date */}
           <div className="flex justify-between mb-8">
-            {/* Sticker placeholder - white space */}
-            <div className="w-80 h-28"></div>
+            {/* Sticker placeholder or patient name */}
+            <div className="w-80 h-28 border border-dashed border-zinc-300 rounded flex items-center justify-center text-sm text-zinc-400">
+              {patientInfo.name || 'Étiquette patient'}
+            </div>
             <div className="text-right text-sm">
               <p><span className="text-zinc-500">Date:</span> {today}</p>
             </div>
