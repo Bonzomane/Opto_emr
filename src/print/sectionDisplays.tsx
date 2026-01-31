@@ -49,9 +49,12 @@ export function PrelimTestsDisplay({ tests }: { tests: PreliminaryTests }) {
       return 'Normal';
     }
     const parts = [];
-    if (tests.stereoFormes) parts.push(`F: ${tests.stereoFormes}/8`);
-    if (tests.stereoCercles) parts.push(`C: ${tests.stereoCercles}/10`);
-    if (tests.stereoAnimaux) parts.push(`A: ${tests.stereoAnimaux}/3`);
+    if (tests.stereoFormes && tests.stereoFormes !== 'Normal') parts.push(`F: ${tests.stereoFormes}/8`);
+    else if (tests.stereoFormes === 'Normal') parts.push('F: Normal');
+    if (tests.stereoCercles && tests.stereoCercles !== 'Normal') parts.push(`C: ${tests.stereoCercles}/10`);
+    else if (tests.stereoCercles === 'Normal') parts.push('C: Normal');
+    if (tests.stereoAnimaux && tests.stereoAnimaux !== 'Normal') parts.push(`A: ${tests.stereoAnimaux}/3`);
+    else if (tests.stereoAnimaux === 'Normal') parts.push('A: Normal');
     return parts.join(' ');
   };
 
