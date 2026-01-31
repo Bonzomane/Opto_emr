@@ -37,9 +37,14 @@ export function TriStateButton({
         setIsExpanded(true);
       }
     } else {
-      // Positif → Négatif (désélectionné)
-      onStateChange('negative');
-      setIsExpanded(false);
+      // Positif: si a des détails et popup fermé, rouvrir le popup
+      // sinon désélectionner
+      if (children && hasSelectedDetails && !isExpanded) {
+        setIsExpanded(true);
+      } else {
+        onStateChange('negative');
+        setIsExpanded(false);
+      }
     }
   };
 
